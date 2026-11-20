@@ -15,7 +15,7 @@ function cardHTML(r,base){const g=GEO[r.rank],dt=r.dates||[];
  const cells=g.c.map((c,i)=>{if(i>=r.pt)return'';const d=dt[i]||'',p=c[4]?0.03:0.04,l=c[0]+c[2]*p,t=c[1]+c[3]*p,w=c[2]*(1-2*p),h=c[3]*(1-2*p);
   return'<div class="cell'+(c[4]?' f':'')+'" style="left:'+l+'%;top:'+t+'%;width:'+w+'%;height:'+h+'%">'+(d?'<span>'+d.slice(0,4)+'<br>'+md(d)+'</span>':'')+'</div>'}).join('');
  const nm=esc(r.name),ns=nm.length>7?'3.2':'4.2';
- return'<div class="art" style="background-image:url('+base+g.img+')">'+cells+'<div class="nm" style="left:'+g.n[0]+'%;width:'+(g.n[1]-g.n[0])+'%;font-size:calc(var(--u,3px)*'+ns+')">'+nm+'</div><div class="no" style="left:'+g.o[0]+'%;width:'+(g.o[1]-g.o[0])+'%">'+esc(r.no)+'</div></div>'}
+ return'<div class="art" style="background-image:url('+base+g.img+')">'+cells+'<div class="nm" style="left:'+g.n[0]+'%;width:'+(g.n[1]-g.n[0])+'%;font-size:calc(var(--u,3px)*'+ns+')">'+nm+'</div><div class="no" style="left:'+g.o[0]+'%;width:'+(g.o[1]-g.o[0])+'%">'+esc(String(r.no).replace(/^[A-Za-z]+/,''))+'</div></div>'}
 function setU(){document.querySelectorAll('.art').forEach(a=>a.style.setProperty('--u',a.clientWidth/100+'px'))}
 addEventListener('resize',setU);
 const call=async b=>{const r=await fetch(API,{method:'POST',body:JSON.stringify({...b,idToken:liff.getIDToken()})});return r.json()};
@@ -25,7 +25,7 @@ function handle(r){if(r.error){$('app').innerHTML='<p class=e>'+esc(r.error)+'</
  if(r.needLink){linkForm();return}render(r.card)}
 function linkForm(m){$('app').innerHTML=`<h3>ポイントカードを連携</h3><p>お会計時にスタッフがお渡しする6桁のコードを入力してください。</p>
  <input id=cd inputmode=numeric maxlength=6 placeholder="000000"><button onclick="link()">連携する</button><div id=er class=e>${m||''}</div>
- <small>LINEのアカウントと会員番号を紐づけます。ポイントの表示だけに使います。</small>`}
+ <small>LINEのアカウントとカードのNo.を紐づけます。ポイントの表示だけに使います。</small>`}
 async function link(){try{const r=await call({action:'link',code:$('cd').value});if(r.error){$('er').textContent=r.error;return}render(r.card)}catch(e){$('er').textContent='通信に失敗しました。もう一度お試しください'}}
 function render(r){
  $('app').innerHTML=cardHTML(r,'')+`<div class=cap>${r.pt} / ${r.need}pt　あと${Math.max(r.need-r.pt,0)}pt で${r.rank==='ファースト'?'継続':'ランクアップ'}${r.expire?'<br>ファースト期限 '+r.expire:''}</div>
