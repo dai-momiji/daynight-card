@@ -1,16 +1,23 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Day&Night ポイントカード</title>
 <style>body{font-family:sans-serif;max-width:460px;margin:auto;padding:14px;background:#f4f4f4}input,button{font-size:20px;padding:12px;width:100%;box-sizing:border-box;margin:6px 0}button{background:#06c755;color:#fff;border:0;border-radius:8px}
-.card{border-radius:14px;padding:12px 14px;color:#fff;margin:10px 0}.top{display:flex;justify-content:space-between;font-size:13px;letter-spacing:1px}.top i{color:#f5c542;font-style:normal}
-.g{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:10px 0}.c{aspect-ratio:1;border-radius:50%;background:#fff;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:13px;text-align:center;line-height:1.15}
-.c.k{border-radius:28%;color:#d4a017;font-size:20px;line-height:1}.c.on{background:radial-gradient(circle at 35% 30%,#ffe9a0,#d4a017);color:#4a3000}.yy,.dd{font-size:13px;font-weight:bold;line-height:1.25}
-.m{background:#fff3cd;padding:10px;border-radius:8px;margin:8px 0;font-size:14px}.e{color:#c00}small{color:#666}</style></head><body>
+.art{position:relative;width:100%;aspect-ratio:1426/840;background-size:100% 100%;border-radius:14px;overflow:hidden;margin:10px 0}
+.cell{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#d4a017);color:#4a3000;font-size:calc(var(--u,3px)*3.1);line-height:1.2;font-weight:bold}
+.cell.f{border-radius:28%}
+.nm,.no{position:absolute;top:89.5%;transform:translateY(-50%);text-align:center;white-space:nowrap;overflow:hidden;color:#111;font-weight:bold;font-size:calc(var(--u,3px)*4.2)}
+.m{background:#fff3cd;padding:10px;border-radius:8px;margin:8px 0;font-size:14px}.e{color:#c00}small{color:#666}.cap{font-size:15px;margin:4px 2px}</style></head><body>
 <div id="app">読み込み中…</div>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 const LIFF_ID='2012622591-ByCxeAxO',API='https://script.google.com/macros/s/AKfycbxAcMc2iwDj_PDVk_sZ0Hq-5K4UVwXz-KH182nEv2Bd_ilm1M1s86tWWtwBGli8vsDnAA/exec';
-const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),
-col={'エコノミー':'#d32f2f','ビジネス':'#1a3fbf','ファースト':'#111'},en={'エコノミー':'ECONOMY CLASS','ビジネス':'BUSINESS CLASS','ファースト':'FIRST CLASS'},cr={'エコノミー':1,'ビジネス':2,'ファースト':3},
-md=d=>d?(+d.slice(5,7))+'/'+(+d.slice(8,10)):'';
+const GEO={"エコノミー":{"img":"card_eco.png","c":[[31.28,7.26,12.55,21.31,0],[43.01,7.26,12.55,21.31,0],[54.74,7.26,12.55,21.31,0],[66.47,7.26,12.55,21.31,0],[81.63,8.33,11.29,19.05,1],[31.28,29.17,12.55,21.31,0],[43.01,29.17,12.55,21.31,0],[54.74,29.17,12.55,21.31,0],[66.47,29.17,12.55,21.31,0],[81.63,30.36,11.29,19.05,1],[31.28,50.95,12.55,21.31,0],[43.01,50.95,12.55,21.31,0],[54.74,50.95,12.55,21.31,0],[66.47,50.95,12.55,21.31,0],[81.63,52.5,11.29,19.05,1]],"n":[9.5,51.9],"o":[69.1,88.7]},"ビジネス":{"img":"card_biz.png","c":[[31.28,11.79,12.48,21.19,0],[42.65,11.79,12.48,21.19,0],[54.03,11.79,12.48,21.19,0],[65.41,11.79,12.48,21.19,0],[76.79,11.79,12.48,21.19,0],[31.28,33.33,12.41,21.07,0],[42.8,33.33,12.41,21.07,0],[54.32,33.33,12.41,21.07,0],[65.84,33.33,12.41,21.07,0],[79.17,34.4,11.01,18.69,1]],"n":[9.5,50.1],"o":[69.1,88.7]},"ファースト":{"img":"card_first.png","c":[[33.03,5.12,13.6,23.1,0],[45.16,5.12,13.6,23.1,0],[57.29,5.12,13.6,23.1,0],[69.42,5.12,13.6,23.1,0],[81.56,5.12,13.6,23.1,0],[33.03,28.1,13.6,23.1,0],[45.16,28.1,13.6,23.1,0],[57.29,28.1,13.6,23.1,0],[69.42,28.1,13.6,23.1,0],[82.75,29.52,12.41,21.43,1]],"n":[9.5,51.9],"o":[71.2,88.7]}};
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),md=d=>d?(+d.slice(5,7))+'/'+(+d.slice(8,10)):'';
+function cardHTML(r,base){const g=GEO[r.rank],dt=r.dates||[];
+ const cells=g.c.map((c,i)=>{if(i>=r.pt)return'';const d=dt[i]||'',p=c[4]?0.03:0.04,l=c[0]+c[2]*p,t=c[1]+c[3]*p,w=c[2]*(1-2*p),h=c[3]*(1-2*p);
+  return'<div class="cell'+(c[4]?' f':'')+'" style="left:'+l+'%;top:'+t+'%;width:'+w+'%;height:'+h+'%">'+(d?'<span>'+d.slice(0,4)+'<br>'+md(d)+'</span>':'')+'</div>'}).join('');
+ const nm=esc(r.name),ns=nm.length>7?'3.2':'4.2';
+ return'<div class="art" style="background-image:url('+base+g.img+')">'+cells+'<div class="nm" style="left:'+g.n[0]+'%;width:'+(g.n[1]-g.n[0])+'%;font-size:calc(var(--u,3px)*'+ns+')">'+nm+'</div><div class="no" style="left:'+g.o[0]+'%;width:'+(g.o[1]-g.o[0])+'%">'+esc(r.no)+'</div></div>'}
+function setU(){document.querySelectorAll('.art').forEach(a=>a.style.setProperty('--u',a.clientWidth/100+'px'))}
+addEventListener('resize',setU);
 const call=async b=>{const r=await fetch(API,{method:'POST',body:JSON.stringify({...b,idToken:liff.getIDToken()})});return r.json()};
 async function main(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();return}
  if(!liff.getIDToken())throw new Error('LINEの情報を取得できませんでした');handle(await call({action:'card'}))}catch(e){$('app').innerHTML='<p class=e>'+esc(e.message)+'</p>'}}
@@ -20,12 +27,8 @@ function linkForm(m){$('app').innerHTML=`<h3>ポイントカードを連携</h3>
  <input id=cd inputmode=numeric maxlength=6 placeholder="000000"><button onclick="link()">連携する</button><div id=er class=e>${m||''}</div>
  <small>LINEのアカウントと会員番号を紐づけます。ポイントの表示だけに使います。</small>`}
 async function link(){try{const r=await call({action:'link',code:$('cd').value});if(r.error){$('er').textContent=r.error;return}render(r.card)}catch(e){$('er').textContent='通信に失敗しました。もう一度お試しください'}}
-function render(r){const eco=r.rank==='エコノミー',dt=r.dates||[],cells=[];
- for(let i=1;i<=r.need;i++){const k=(eco&&i%5==0)||i==r.need,on=i<=r.pt,d=dt[i-1]||'';
-  cells.push('<div class="c'+(k?' k':'')+(on?' on':'')+'"><span>'+(on?(d?'<span class=yy>'+d.slice(0,4)+'</span><br><span class=dd>'+md(d)+'</span>':''):(k?'♛':i))+'</span></div>')}
- $('app').innerHTML=`<div class=card style="background:${col[r.rank]}"><div class=top><span><i>${'♛'.repeat(cr[r.rank])}</i> ${en[r.rank]}</span><span>No.${esc(r.no)}</span></div>
- <div class=g>${cells.join('')}</div><b>${esc(r.name)}</b> 様　${r.pt} / ${r.need}pt<br>あと${Math.max(r.need-r.pt,0)}pt で${r.rank==='ファースト'?'継続':'ランクアップ'}${r.expire?'<br>期限 '+r.expire:''}</div>
- ${r.willDouble?'<div class=m>次回予約あり。'+esc(r.reserve)+'までのご来店でポイント2倍</div>':''}
- ${r.benefit?'<div class=m>'+esc(r.rank)+'特典：'+esc(r.benefit)+'</div>':''}${r.nextBenefit?'<div class=m>ファーストになると：'+esc(r.nextBenefit)+'</div>':''}`}
+function render(r){
+ $('app').innerHTML=cardHTML(r,'')+`<div class=cap>${r.pt} / ${r.need}pt　あと${Math.max(r.need-r.pt,0)}pt で${r.rank==='ファースト'?'継続':'ランクアップ'}${r.expire?'<br>ファースト期限 '+r.expire:''}</div>
+ ${r.willDouble?'<div class=m>次回予約あり。'+esc(r.reserve)+'までのご来店でポイント2倍</div>':''}`;setU()}
 main();
 </script></body></html>
