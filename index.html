@@ -1,5 +1,6 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Day&Night ポイントカード</title>
-<style>body{font-family:sans-serif;max-width:460px;margin:auto;padding:14px;background:#f4f4f4}input,button{font-size:20px;padding:12px;width:100%;box-sizing:border-box;margin:6px 0}button{background:#06c755;color:#fff;border:0;border-radius:8px}
+<style>body{font-family:sans-serif;max-width:460px;margin:auto;padding:14px;background:#f4f4f4}input,button{font-size:20px;padding:12px;width:100%;box-sizing:border-box;margin:6px 0}button,.btn{background:#06c755;color:#fff;border:0;border-radius:8px}
+.btn{display:block;text-align:center;text-decoration:none;font-size:20px;padding:14px;margin:10px 0}
 .art{position:relative;width:100%;aspect-ratio:1426/840;background-size:100% 100%;border-radius:14px;overflow:hidden;margin:10px 0}
 .cell{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#d4a017);color:#4a3000;font-size:calc(var(--u,3px)*3.1);line-height:1.2;font-weight:bold}
 .cell.f{border-radius:28%}
@@ -8,10 +9,10 @@
 <div id="app">読み込み中…</div>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-const LIFF_ID='2012622591-ByCxeAxO',API='https://script.google.com/macros/s/AKfycbxAcMc2iwDj_PDVk_sZ0Hq-5K4UVwXz-KH182nEv2Bd_ilm1M1s86tWWtwBGli8vsDnAA/exec';
+const LIFF_ID='2012622591-ByCxeAxO',API='https://script.google.com/macros/s/AKfycbxAcMc2iwDj_PDVk_sZ0Hq-5K4UVwXz-KH182nEv2Bd_ilm1M1s86tWWtwBGli8vsDnAA/exec',OA='@333fguor';
 const GEO={"エコノミー":{"img":"card_eco.png","c":[[31.28,7.26,12.55,21.31,0],[43.01,7.26,12.55,21.31,0],[54.74,7.26,12.55,21.31,0],[66.47,7.26,12.55,21.31,0],[81.63,8.33,11.29,19.05,1],[31.28,29.17,12.55,21.31,0],[43.01,29.17,12.55,21.31,0],[54.74,29.17,12.55,21.31,0],[66.47,29.17,12.55,21.31,0],[81.63,30.36,11.29,19.05,1],[31.28,50.95,12.55,21.31,0],[43.01,50.95,12.55,21.31,0],[54.74,50.95,12.55,21.31,0],[66.47,50.95,12.55,21.31,0],[81.63,52.5,11.29,19.05,1]],"n":[9.5,51.9],"o":[69.1,88.7]},"ビジネス":{"img":"card_biz.png","c":[[31.28,11.79,12.48,21.19,0],[42.65,11.79,12.48,21.19,0],[54.03,11.79,12.48,21.19,0],[65.41,11.79,12.48,21.19,0],[76.79,11.79,12.48,21.19,0],[31.28,33.33,12.41,21.07,0],[42.8,33.33,12.41,21.07,0],[54.32,33.33,12.41,21.07,0],[65.84,33.33,12.41,21.07,0],[79.17,34.4,11.01,18.69,1]],"n":[9.5,50.1],"o":[69.1,88.7]},"ファースト":{"img":"card_first.png","c":[[33.03,5.12,13.6,23.1,0],[45.16,5.12,13.6,23.1,0],[57.29,5.12,13.6,23.1,0],[69.42,5.12,13.6,23.1,0],[81.56,5.12,13.6,23.1,0],[33.03,28.1,13.6,23.1,0],[45.16,28.1,13.6,23.1,0],[57.29,28.1,13.6,23.1,0],[69.42,28.1,13.6,23.1,0],[82.75,29.52,12.41,21.43,1]],"n":[9.5,51.9],"o":[71.2,88.7]}};
-let K='';
-const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),md=d=>d?(+d.slice(5,7))+'/'+(+d.slice(8,10)):'';
+let K='',E='',S='',PN='';
+const $=i=>document.getElementById(i),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),md=d=>d?(+d.slice(5,7))+'/'+(+d.slice(8,10)):'';
 function cardHTML(r,base){const g=GEO[r.rank],dt=r.dates||[];
  const cells=g.c.map((c,i)=>{if(i>=r.pt)return'';const d=dt[i]||'',p=c[4]?0.03:0.04,l=c[0]+c[2]*p,t=c[1]+c[3]*p,w=c[2]*(1-2*p),h=c[3]*(1-2*p);
   return'<div class="cell'+(c[4]?' f':'')+'" style="left:'+l+'%;top:'+t+'%;width:'+w+'%;height:'+h+'%">'+(d?'<span>'+d.slice(0,4)+'<br>'+md(d)+'</span>':'')+'</div>'}).join('');
@@ -22,17 +23,27 @@ addEventListener('resize',setU);
 const call=async b=>{const r=await fetch(API,{method:'POST',body:JSON.stringify({...b,idToken:liff.getIDToken()})});return r.json()};
 async function main(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();return}
  if(!liff.getIDToken())throw new Error('LINEの情報を取得できませんでした');
- K=new URLSearchParams(location.search).get('k')||'';
- handle(await call(K?{action:'scan',key:K}:{action:'card'}))}catch(e){$('app').innerHTML='<p class=e>'+esc(e.message)+'</p>'}}
+ const q=new URLSearchParams(location.search);K=q.get('k')||'';E=q.get('e')||'';S=q.get('s')||'';
+ handle(await call(K?{action:'scan',key:K}:(E?{action:'entry',key:E,store:S}:{action:'card'})))}catch(e){$('app').innerHTML='<p class=e>'+esc(e.message)+'</p>'}}
 function handle(r){if(r.error){$('app').innerHTML='<p class=e>'+esc(r.error)+'</p><button onclick="location.reload()">もう一度</button>';return}
- if(r.needLink){linkForm();return}render(r.card,r)}
-function linkForm(m){$('app').innerHTML=`<h3>ポイントカードを連携</h3><p>お会計時にスタッフがお渡しする6桁のコードを入力してください。</p>
- <input id=cd inputmode=numeric maxlength=6 placeholder="000000"><button onclick="link()">連携する</button><div id=er class=e>${m||''}</div>
- <small>LINEのアカウントとカードのNo.を紐づけます。ポイントの表示だけに使います。</small>`}
-async function link(){try{const r=await call({action:'link',code:$('cd').value});if(r.error){$('er').textContent=r.error;return}
- if(K){const s=await call({action:'scan',key:K});render(s.card||r.card,s)}else render(r.card,{})}catch(e){$('er').textContent='通信に失敗しました。もう一度お試しください'}}
+ if(r.needLink){landing();return}if(r.pending){PN=r.name;pendView();return}render(r.card,r)}
+function landing(){$('app').innerHTML=`<h3>ポイントカードを作る</h3><p>お名前（フルネーム）を入れてください。</p>
+ <input id=nm placeholder="山田 花子"><button onclick="enroll()">登録する</button><div id=er class=e></div>
+ <small>LINEのアカウントとお名前を、ポイントカードのために記録します。${E?'ご来店の日時も、受付のために記録します。':''}</small>
+ <hr style="margin:22px 0"><p>紙のカードをお持ちの方、スタッフからコードを受け取った方はこちら</p>
+ <input id=cd inputmode=numeric maxlength=6 placeholder="連携コード（6桁）"><button style="background:#555" onclick="link()">コードで連携する</button><div id=er2 class=e></div>`}
+const oaUrl=n=>'https://line.me/R/oaMessage/'+encodeURIComponent(OA)+'/?'+encodeURIComponent('【ポイントカード】'+n);
+async function enroll(){const n=$('nm').value.trim();if(!n){$('er').textContent='お名前を入れてください';return}
+ try{const r=await call({action:'enroll',name:n,key:E,store:S});if(r.error){$('er').textContent=r.error;return}
+  if(r.card){render(r.card,{});return}PN=r.name;sendView()}catch(e){$('er').textContent='通信に失敗しました。もう一度お試しください'}}
+function sendView(){$('app').innerHTML=`<h3>ご登録ありがとうございます</h3><p>最後に、公式LINEのトークに、お名前を送ってください。</p>
+ <a class="btn" href="${oaUrl(PN)}">トークに名前を送る</a><button style="background:#888" onclick="pendView()">すでに送っています</button>`}
+function pendView(){$('app').innerHTML=`<h3>${esc(PN)} 様</h3><p>ご登録ありがとうございます。スタッフがカードをご用意します。少々お待ちください。</p>
+ <p><small>公式LINEのトークに、まだ名前を送っていない方は、<a href="${oaUrl(PN)}">こちら</a></small></p>`}
+async function link(){try{const r=await call({action:'link',code:$('cd').value});if(r.error){$('er2').textContent=r.error;return}
+ if(K){const s=await call({action:'scan',key:K});render(s.card||r.card,s)}else if(E){const s=await call({action:'entry',key:E,store:S});render(s.card||r.card,s)}else render(r.card,{})}catch(e){$('er2').textContent='通信に失敗しました。もう一度お試しください'}}
 function render(r,x){x=x||{};
- const bn=x.added?'<div class=ok>ポイントを付けました（+'+x.added+'pt）'+(x.special?'<br>おめでとうございます！スタッフにお声がけください':'')+'</div>':(x.already?'<div class=m>本日はすでにポイントが付いています</div>':'');
+ const bn=x.added?'<div class=ok>ポイントを付けました（+'+x.added+'pt）'+(x.special?'<br>おめでとうございます！スタッフにお声がけください':'')+'</div>':(x.already?'<div class=m>本日はすでにポイントが付いています</div>':(x.arrived?'<div class=ok>ご来店ありがとうございます</div>':''));
  $('app').innerHTML=bn+cardHTML(r,'')+`<div class=cap>${r.pt} / ${r.need}pt　あと${Math.max(r.need-r.pt,0)}pt で${r.rank==='ファースト'?'継続':'ランクアップ'}${r.expire?'<br>ファースト期限 '+r.expire:''}</div>
  ${r.willDouble?'<div class=m>次回予約あり。'+esc(r.reserve)+'までのご来店でポイント2倍</div>':''}`;setU()}
 main();
