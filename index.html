@@ -1,52 +1,253 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Day&Night お客様カルテ</title>
-<style>body{font-family:sans-serif;max-width:460px;margin:auto;padding:14px;background:#f4f4f4}input,button{font-size:20px;padding:12px;width:100%;box-sizing:border-box;margin:6px 0}button,.btn{background:#06c755;color:#fff;border:0;border-radius:8px}
-.btn{display:block;text-align:center;text-decoration:none;font-size:20px;padding:14px;margin:10px 0}.btn.sub{background:#fff;color:#06c755;border:2px solid #06c755;font-size:17px;padding:12px}summary{font-size:15px;color:#555;padding:8px 0}
-.art{position:relative;width:100%;aspect-ratio:1426/840;background-size:100% 100%;border-radius:14px;overflow:hidden;margin:10px 0}
-.cell{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#d4a017);color:#4a3000;font-size:calc(var(--u,3px)*3.1);line-height:1.2;font-weight:bold}
-.cell.f{border-radius:28%}
-.nm,.no{position:absolute;top:89.5%;transform:translateY(-50%);text-align:center;white-space:nowrap;overflow:hidden;color:#111;font-weight:bold;font-size:calc(var(--u,3px)*4.2)}
-.m{background:#fff3cd;padding:10px;border-radius:8px;margin:8px 0;font-size:14px}.ok{background:#d8f5e0;padding:10px;border-radius:8px;margin:8px 0;font-size:15px}.e{color:#c00}small{color:#666}.cap{font-size:15px;margin:4px 2px}</style></head><body>
-<div id="app">読み込み中…</div>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Day&Night お客様カルテ</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#f4f3f1;color:#1d1f24;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 40px}
+[hidden]{display:none!important}
+h1{font-size:18px;margin:2px 0 14px;text-align:center;letter-spacing:.06em}
+h1 small{display:block;font-size:12px;color:#8a8d94;font-weight:500;letter-spacing:.2em;margin-bottom:2px}
+.box{background:#fff;border-radius:18px;padding:18px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:12px}
+.box h2{font-size:17px;margin:0 0 6px}
+.box p{margin:6px 0;color:#555;font-size:14px}
+.choice{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.choice label{display:flex;align-items:center;gap:12px;border:2px solid #e4e4e0;border-radius:14px;padding:14px;font-weight:700;cursor:pointer;font-size:16px}
+.choice input{width:20px;height:20px;accent-color:#1d1f24}
+.choice label small{display:block;font-weight:500;color:#777;font-size:12px}
+.choice label.on{border-color:#1d1f24;background:#fafaf8}
+label.f{display:block;font-size:13px;font-weight:700;color:#666;margin:12px 0 4px}
+input.t{width:100%;padding:14px;border:1.5px solid #ddd;border-radius:12px;font-size:18px;background:#fff}
+input.t:focus{outline:none;border-color:#1d1f24}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:700;background:#1d1f24;color:#fff;margin-top:14px;cursor:pointer;text-align:center;text-decoration:none}
+.btn.sub{background:#fff;color:#06c755;border:2px solid #06c755}
+.btn.gray{background:#e9e8e4;color:#1d1f24}
+.btn:disabled{opacity:.4}
+.err{color:#c01d2a;font-size:14px;margin-top:10px;min-height:1px}
+details{margin-top:14px}summary{font-size:14px;color:#666;cursor:pointer;padding:6px 0}
+.banner{border-radius:14px;padding:12px 14px;margin-bottom:12px;font-weight:700;font-size:15px}
+.banner.ok{background:#e6f6ec;color:#0b6b3a}.banner.gift{background:#fde8f1;color:#a21c57}.banner.up{background:#fff3d6;color:#7a5200}.banner.plain{background:#eceae6;color:#555}
+.banner div+div{margin-top:4px}
+/* カード */
+.cv{position:relative;width:100%;aspect-ratio:1005/591;border-radius:12px;overflow:hidden;background:#ddd;box-shadow:0 4px 14px rgba(0,0,0,.18);--u:3.5px}
+.cv img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cell{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#f6d77a,#e3ac22 70%);color:#3b2a00;font-weight:800;line-height:1.08;text-align:center;box-shadow:0 0 0 calc(var(--u)*.35) rgba(255,255,255,.92);font-size:calc(var(--u)*3.0);border-radius:50%;letter-spacing:-.02em}
+.cell.fr{border-radius:22%}
+.nm,.nn{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:700;text-align:center}
+.info{margin:12px 2px 2px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.info .pt{font-size:22px;font-weight:800}.info .pt small{font-size:13px;color:#777;font-weight:600}
+.info .nx{font-size:14px;color:#444}
+.res{margin:4px 2px 0;font-size:14px;color:#8a4b00;font-weight:700}
+.plat{margin-top:12px}
+.plat .lbl{font-size:13px;color:#777}.plat .amt{font-size:34px;font-weight:800;letter-spacing:-.01em}.plat .amt small{font-size:14px;color:#888;font-weight:600;margin-left:4px}
+.bar{height:10px;background:#ececec;border-radius:6px;overflow:hidden;margin:8px 0 10px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#9aa1ab,#5c6470)}
+.plat .rem{font-size:20px;font-weight:800}.plat .dl{font-size:16px;font-weight:600;margin-top:2px}.plat .note{font-size:12px;color:#8a8d94;margin-top:8px;line-height:1.6}
+.spin{text-align:center;padding:60px 0;color:#888}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><small>Day&amp;Night</small>お客様カルテ</h1>
+
+  <div id="loading" class="spin">読み込み中…</div>
+
+  <!-- 初回：名前と、新規／紙カード -->
+  <div id="landing" hidden>
+    <div class="box">
+      <h2>はじめまして</h2>
+      <p>お客様カルテをつくります。当てはまる方を選んでお名前を入力してください。</p>
+      <div class="choice" id="choice">
+        <label><input type="radio" name="kind" value="new"><span>はじめてのご来店<small>これから新しくつくります</small></span></label>
+        <label><input type="radio" name="kind" value="paper"><span>紙のポイントカードをお持ちの方<small>いまのポイントを引き継ぎます</small></span></label>
+      </div>
+      <label class="f" for="nm">お名前（フルネーム）</label>
+      <input id="nm" class="t" placeholder="例 山田 花子" autocomplete="name">
+      <button id="go" class="btn">つづける</button>
+      <div id="landErr" class="err"></div>
+    </div>
+    <details class="box" id="codeBox">
+      <summary>連携コードを発行してもらった方はこちら</summary>
+      <label class="f" for="code">連携コード</label>
+      <input id="code" class="t" inputmode="numeric" placeholder="6けたの数字" autocomplete="off">
+      <button id="codeGo" class="btn gray">つなぐ</button>
+      <div id="codeErr" class="err"></div>
+    </details>
+  </div>
+
+  <!-- 確認待ち -->
+  <div id="pend" hidden>
+    <div class="box">
+      <h2>ありがとうございます</h2>
+      <p id="pendTxt">スタッフが確認しています。そのままお待ちください。</p>
+      <p style="font-size:13px;color:#888">確認が終わると、この画面にカードが出ます。</p>
+      <a id="pendOa" class="btn sub" href="#">公式LINEにお名前を送る（任意）</a>
+      <button id="pendRe" class="btn gray">更新する</button>
+    </div>
+  </div>
+
+  <!-- カード -->
+  <div id="card" hidden>
+    <div id="banner"></div>
+    <div class="cv" id="cv"><img id="cimg" alt=""><div id="ov"></div></div>
+    <div class="info"><span class="pt" id="pt"></span><span class="nx" id="nx"></span></div>
+    <div class="res" id="res"></div>
+    <div class="box plat" id="plat" hidden></div>
+    <a id="oaBtn" class="btn sub" href="https://line.me/R/ti/p/@333fguor">公式LINEのトークを開く</a>
+  </div>
+
+  <div id="errBox" class="box" hidden><h2>うまく開けませんでした</h2><p id="errTxt"></p><button id="retry" class="btn">もう一度ひらく</button></div>
+</div>
+
 <script>
-const LIFF_ID='2012622591-ByCxeAxO',API='https://script.google.com/macros/s/AKfycbxAcMc2iwDj_PDVk_sZ0Hq-5K4UVwXz-KH182nEv2Bd_ilm1M1s86tWWtwBGli8vsDnAA/exec',OA='@333fguor';
-const TALK='https://line.me/R/ti/p/'+encodeURIComponent(OA);
-const GEO={"エコノミー":{"img":"card_eco.png","c":[[31.28,7.26,12.55,21.31,0],[43.01,7.26,12.55,21.31,0],[54.74,7.26,12.55,21.31,0],[66.47,7.26,12.55,21.31,0],[81.63,8.33,11.29,19.05,1],[31.28,29.17,12.55,21.31,0],[43.01,29.17,12.55,21.31,0],[54.74,29.17,12.55,21.31,0],[66.47,29.17,12.55,21.31,0],[81.63,30.36,11.29,19.05,1],[31.28,50.95,12.55,21.31,0],[43.01,50.95,12.55,21.31,0],[54.74,50.95,12.55,21.31,0],[66.47,50.95,12.55,21.31,0],[81.63,52.5,11.29,19.05,1]],"n":[9.5,51.9],"o":[69.1,88.7]},"ビジネス":{"img":"card_biz.png","c":[[31.28,11.79,12.48,21.19,0],[42.65,11.79,12.48,21.19,0],[54.03,11.79,12.48,21.19,0],[65.41,11.79,12.48,21.19,0],[76.79,11.79,12.48,21.19,0],[31.28,33.33,12.41,21.07,0],[42.8,33.33,12.41,21.07,0],[54.32,33.33,12.41,21.07,0],[65.84,33.33,12.41,21.07,0],[79.17,34.4,11.01,18.69,1]],"n":[9.5,50.1],"o":[69.1,88.7]},"ファースト":{"img":"card_first.png","c":[[33.03,5.12,13.6,23.1,0],[45.16,5.12,13.6,23.1,0],[57.29,5.12,13.6,23.1,0],[69.42,5.12,13.6,23.1,0],[81.56,5.12,13.6,23.1,0],[33.03,28.1,13.6,23.1,0],[45.16,28.1,13.6,23.1,0],[57.29,28.1,13.6,23.1,0],[69.42,28.1,13.6,23.1,0],[82.75,29.52,12.41,21.43,1]],"n":[9.5,51.9],"o":[71.2,88.7]}};
-let K='',E='',S='',PN='';
-const $=i=>document.getElementById(i),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),md=d=>d?(+d.slice(5,7))+'/'+(+d.slice(8,10)):'';
-function cardHTML(r,base){const g=GEO[r.rank],dt=r.dates||[];
- const cells=g.c.map((c,i)=>{if(i>=r.pt)return'';const d=dt[i]||'',p=c[4]?0.03:0.04,l=c[0]+c[2]*p,t=c[1]+c[3]*p,w=c[2]*(1-2*p),h=c[3]*(1-2*p);
-  return'<div class="cell'+(c[4]?' f':'')+'" style="left:'+l+'%;top:'+t+'%;width:'+w+'%;height:'+h+'%">'+(d?'<span>'+d.slice(0,4)+'<br>'+md(d)+'</span>':'')+'</div>'}).join('');
- const nm=esc(r.name),ns=nm.length>7?'3.2':'4.2';
- return'<div class="art" style="background-image:url('+base+g.img+')">'+cells+'<div class="nm" style="left:'+g.n[0]+'%;width:'+(g.n[1]-g.n[0])+'%;font-size:calc(var(--u,3px)*'+ns+')">'+nm+'</div><div class="no" style="left:'+g.o[0]+'%;width:'+(g.o[1]-g.o[0])+'%">'+esc(String(r.no).replace(/^[A-Za-z]+/,''))+'</div></div>'}
-function setU(){document.querySelectorAll('.art').forEach(a=>a.style.setProperty('--u',a.clientWidth/100+'px'))}
-addEventListener('resize',setU);
-const call=async b=>{const r=await fetch(API,{method:'POST',body:JSON.stringify({...b,idToken:liff.getIDToken()})});return r.json()};
-async function main(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();return}
- if(!liff.getIDToken())throw new Error('LINEの情報を取得できませんでした');
- const q=new URLSearchParams(location.search);K=q.get('k')||'';E=q.get('e')||'';S=q.get('s')||'';
- handle(await call(K?{action:'scan',key:K}:(E?{action:'entry',key:E,store:S}:{action:'card'})))}catch(e){$('app').innerHTML='<p class=e>'+esc(e.message)+'</p>'}}
-function handle(r){if(r.error){$('app').innerHTML='<p class=e>'+esc(r.error)+'</p><button onclick="location.reload()">もう一度</button>';return}
- if(r.needLink){landing();return}if(r.pending){PN=r.name;pendView();return}render(r.card,r)}
-function landing(){document.title='お客様カルテ';$('app').innerHTML=`<h3>お客様カルテのご登録</h3><p>お名前（フルネーム）を入れてください。</p>
- <input id=nm placeholder="山田 花子"><button onclick="enroll()">登録する</button><div id=er class=e></div>
- <details style="margin-top:22px"><summary>連携コードをお持ちの方はこちら</summary>
- <input id=cd inputmode=numeric maxlength=6 placeholder="連携コード（6桁）"><button style="background:#555" onclick="link()">コードで連携する</button><div id=er2 class=e></div></details>`}
-const oaUrl=n=>'https://line.me/R/oaMessage/'+encodeURIComponent(OA)+'/?'+encodeURIComponent('【お客様カルテ】'+n);
-async function enroll(){const n=$('nm').value.trim();if(!n){$('er').textContent='お名前を入れてください';return}
- try{const r=await call({action:'enroll',name:n,key:E,store:S});if(r.error){$('er').textContent=r.error;return}
-  if(r.card){render(r.card,{});return}PN=r.name;sendView()}catch(e){$('er').textContent='通信に失敗しました。もう一度お試しください'}}
-function sendView(){document.title='お客様カルテ';$('app').innerHTML=`<h3>ご登録ありがとうございます</h3><p>最後に、公式LINEのトークに、お名前を送ってください。</p>
- <a class="btn" href="${oaUrl(PN)}">トークに名前を送る</a><button style="background:#888" onclick="pendView()">すでに送っています</button>`}
-function pendView(){document.title='お客様カルテ';$('app').innerHTML=`<h3>${esc(PN)} 様</h3><p>お客様カルテのご登録、ありがとうございます。スタッフがご確認します。少々お待ちください。</p>
- <button onclick="location.reload()">登録が済んだか確認する</button>
- <p><small>公式LINEのトークに、まだ名前を送っていない方は、<a href="${oaUrl(PN)}">こちら</a></small></p>`}
-async function link(){try{const r=await call({action:'link',code:$('cd').value});if(r.error){$('er2').textContent=r.error;return}
- if(K){const s=await call({action:'scan',key:K});render(s.card||r.card,s)}else if(E){const s=await call({action:'entry',key:E,store:S});render(s.card||r.card,s)}else render(r.card,{})}catch(e){$('er2').textContent='通信に失敗しました。もう一度お試しください'}}
-function render(r,x){x=x||{};document.title='ポイントカード';
- const bn=x.added?'<div class=ok>ポイントを付けました（+'+x.added+'pt）</div>':(x.already?'<div class=m>本日はすでにポイントが付いています</div>':(x.arrived?'<div class=ok>ご来店ありがとうございます</div>':''));
- $('app').innerHTML=bn+cardHTML(r,'')+`<div class=cap>${r.pt} / ${r.need}pt　あと${Math.max(r.need-r.pt,0)}pt で${r.rank==='ファースト'?'継続':'ランクアップ'}${r.expire?'<br>ファースト期限 '+r.expire:''}</div>
- ${r.willDouble?'<div class=m>次回予約あり。'+esc(r.reserve)+'までのご来店でポイント2倍</div>':''}
- <a class="btn sub" href="${TALK}">公式LINEのトークを開く</a>`;setU()}
-main();
-</script></body></html>
+(function () {
+'use strict';
+/* ===== ここだけ書き換える（今までのURLをそのまま貼る） ===== */
+var EXEC_URL = 'https://script.google.com/macros/s/ここにウェブアプリのURL/exec';
+var LIFF_ID = '2012622591-ByCxeAxO';
+var OA_URL = 'https://line.me/R/ti/p/@333fguor', OA_ID = '@333fguor';
+var IMG_VER = '4';
+/* ============================================================= */
+
+/* カードの絵ごとの「丸の位置」: [中心x%, 中心y%, 幅%, 高さ%, 枠(プレゼント)か] — 左上のポイントから順番 */
+var C = function (x, y, w, h) { return [x, y, w, h, 0]; }, F = function (x, y, w, h) { return [x, y, w, h, 1]; };
+var GEO = {
+  'エコノミー': { img: 'card_eco.png', ar: '1005/591', ty: 90.3, tc: '#111', n: [9.6, 52], o: [68.6, 88.4], s: [
+    C(37.35, 22.18, 11.34, 19.28), C(49.03, 22.17, 11.34, 19.28), C(60.18, 22.17, 11.34, 19.29), C(71.94, 22.17, 11.34, 19.28), F(84.63, 22.08, 9.63, 16.38),
+    C(37.35, 43.75, 11.35, 19.31), C(49.03, 43.75, 11.36, 19.32), C(60.19, 43.75, 11.35, 19.31), C(71.94, 43.76, 11.34, 19.28), F(84.53, 43.57, 9.63, 16.38)] },
+  'ビジネス': { img: 'card_biz.png', ar: '1005/591', ty: 90.3, tc: '#111', n: [9.6, 52], o: [68.6, 88.4], s: [
+    C(37.35, 22.17, 11.36, 19.32), C(49.03, 22.17, 11.36, 19.32), C(60.19, 22.18, 11.37, 19.33), C(71.94, 22.16, 11.35, 19.3), C(82.97, 22.4, 11.37, 19.34),
+    C(37.35, 43.74, 11.37, 19.33), C(49.02, 43.75, 11.37, 19.34), C(60.18, 43.74, 11.35, 19.31), C(71.92, 43.75, 11.36, 19.31), F(84.58, 43.65, 9.55, 16.51)] },
+  'ファースト': { img: 'card_first.png', ar: '1005/591', ty: 90.3, tc: '#111', n: [9.9, 54], o: [71, 88.1], s: [
+    C(39.56, 16.3, 12.14, 20.65), C(51.44, 16.29, 12.14, 20.64), C(63.97, 16.29, 12.14, 20.64), C(75.89, 16.55, 12.15, 20.66), C(88.45, 17.27, 12.14, 20.64),
+    C(39.56, 39.29, 12.15, 20.66), C(51.45, 39.29, 12.14, 20.64), C(63.96, 39.28, 12.14, 20.64), C(75.89, 39.93, 12.13, 20.63), F(88.61, 40.36, 10.35, 18)] },
+  'プラチナ': { img: 'card_platinum.png', ar: '1005/591', ty: 86.9, tc: '#f4f4f4', n: [9.7, 47.6], o: [66.6, 91.8], s: [
+    C(31.28, 19.61, 10.72, 18.23), C(43.19, 19.62, 10.71, 18.21), C(55.07, 19.62, 10.69, 18.18), C(66.97, 19.62, 10.7, 18.2), C(78.85, 19.62, 10.68, 18.16), C(90.75, 19.62, 10.71, 18.21),
+    C(31.35, 39.79, 10.71, 18.22), C(43.25, 39.8, 10.69, 18.17), C(55.13, 39.81, 10.69, 18.17), C(67.03, 39.8, 10.67, 18.15), C(78.91, 39.81, 10.69, 18.18), F(91.19, 40.1, 9.63, 16.24)] }
+};
+var NEXT = { 'エコノミー': 'ビジネス', 'ビジネス': 'ファースト', 'ファースト': 'プラチナ', 'プラチナ': 'プラチナ' };
+
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function jp(d) { var m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[1] + '年' + (+m[2]) + '月' + (+m[3]) + '日' : ''; }
+function yen(n) { return '¥' + Number(n || 0).toLocaleString('ja-JP'); }
+function show(id) { ['loading', 'landing', 'pend', 'card', 'errBox'].forEach(function (x) { $(x).hidden = x !== id; }); }
+var qs = new URLSearchParams(location.search);
+var KEY = qs.get('e') || '', STORE = qs.get('s') || '';
+// LIFFのURLに付けた値は、ログイン後に liff.state に入ることがある
+try { var ls = qs.get('liff.state'); if (ls && !KEY) { var q2 = new URLSearchParams(ls.replace(/^\/?\??/, '')); KEY = q2.get('e') || ''; STORE = q2.get('s') || STORE; } } catch (e) { }
+var TOKEN = '', STATE = null, poller = null, LAST = null;
+
+function call(payload) {
+  payload.idToken = TOKEN;
+  return fetch(EXEC_URL, { method: 'POST', body: JSON.stringify(payload) }).then(function (r) { return r.json(); }).then(function (j) { if (j.error) throw new Error(j.error); return j; });
+}
+function fail(msg) { show('errBox'); $('errTxt').textContent = msg; }
+
+/* ---------- 起動 ---------- */
+function boot() {
+  show('loading');
+  liff.init({ liffId: LIFF_ID }).then(function () {
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+    TOKEN = liff.getIDToken();
+    if (!TOKEN) { liff.login({ redirectUri: location.href }); return; }
+    return KEY ? call({ action: 'entry', key: KEY, store: STORE }) : call({ action: 'card' });
+  }).then(function (r) { if (r) apply(r); }).catch(function (e) { fail(e.message || String(e)); });
+}
+$('retry').onclick = boot;
+
+function apply(r, fromPoll) {
+  STATE = r.state; clearInterval(poller);
+  if (r.state === 'linked') { drawCard(r, fromPoll); show('card'); }
+  else if (r.state === 'pending') {
+    show('pend'); var nm = r.name || ''; $('pendTxt').textContent = (nm ? nm + ' 様、' : '') + 'スタッフが確認しています。そのままお待ちください。';
+    $('pendOa').href = 'https://line.me/R/oaMessage/' + OA_ID + '/?' + encodeURIComponent('お名前：' + nm + (r.type ? '（' + r.type + '）' : ''));
+    poller = setInterval(function () { call({ action: 'card' }).then(function (x) { if (x.state === 'linked') { x.justRegistered = true; apply(x, true); } }).catch(function () { }); }, 5000);
+  } else { show('landing'); }
+}
+document.addEventListener('visibilitychange', function () { if (!document.hidden && TOKEN && STATE === 'linked') call({ action: 'card' }).then(function (r) { if (r.state === 'linked') drawCard(r, true); }).catch(function () { }); });
+
+/* ---------- 初回の入力 ---------- */
+var kind = '';
+$('choice').onchange = function (e) { kind = e.target.value; Array.prototype.forEach.call($('choice').children, function (l) { l.classList.toggle('on', l.querySelector('input').checked); }); };
+$('go').onclick = function () {
+  $('landErr').textContent = ''; var name = $('nm').value.trim();
+  if (!kind) { $('landErr').textContent = '「はじめて」か「紙のカードあり」を選んでください'; return; }
+  if (!name) { $('landErr').textContent = 'お名前を入力してください'; return; }
+  var b = this; b.disabled = true;
+  call({ action: 'enroll', name: name, type: kind, key: KEY, store: STORE }).then(apply).catch(function (e) { $('landErr').textContent = e.message; }).then(function () { b.disabled = false; });
+};
+$('codeGo').onclick = function () {
+  $('codeErr').textContent = ''; var b = this; b.disabled = true;
+  call({ action: 'link', code: $('code').value }).then(apply).catch(function (e) { $('codeErr').textContent = e.message; }).then(function () { b.disabled = false; });
+};
+$('pendRe').onclick = function () { call({ action: 'card' }).then(function (r) { if (r.state === 'linked') r.justRegistered = true; apply(r); }).catch(function (e) { fail(e.message); }); };
+
+/* ---------- カードの表示 ---------- */
+function banner(r) {
+  var h = [], c = r.card;
+  if (r.justRegistered) h.push(['ok', '登録ありがとうございます！今日のポイントがつきました']);
+  else if (r.granted) h.push(['ok', r.dbl ? '次回予約の特典で、今日はポイント2倍です！' : '今日のポイントがつきました']);
+  else if (r.granted === false) h.push(['plain', '本日はすでにポイントがついています']);
+  if (r.gift) h.push(['gift', '🎁 プレゼントがあります']);
+  (r.msgs || []).forEach(function (m) {
+    if (/^プラチナカード達成/.test(m)) h.push(['up', 'プラチナカード達成！更新ありがとうございます']);
+    else if (/達成/.test(m)) h.push(['up', m.replace(/新しい.*$/, '').replace(/！$/, '') + '！ 次のご来店から特典が変わります']);
+    else if (/戻ります|更新しました/.test(m)) h.push(['up', m.split('。')[0]]);
+  });
+  $('banner').innerHTML = h.map(function (x) { return '<div class="banner ' + x[0] + '">' + esc(x[1]) + '</div>'; }).join('');
+}
+function drawCard(r) {
+  var c = r.card, g = GEO[c.rank] || GEO['エコノミー'];
+  banner(r); LAST = r;
+  var cv = $('cv'), img = $('cimg');
+  img.onerror = function () { img.style.display = 'none'; }; img.style.display = '';
+  img.src = g.img + '?v=' + IMG_VER; cv.style.aspectRatio = g.ar;
+  var h = '', i;
+  for (i = 0; i < c.pt && i < g.s.length; i++) {
+    var s = g.s[i], d = c.dates[i] || '', m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    h += '<div class="cell' + (s[4] ? ' fr' : '') + '" style="left:' + s[0] + '%;top:' + s[1] + '%;width:' + s[2] + '%;height:' + s[3] + '%">' + (m ? '<span>' + m[1] + '</span><span>' + (+m[2]) + '/' + (+m[3]) + '</span>' : '') + '</div>';
+  }
+  h += '<div class="nm" id="nmT" style="left:' + ((g.n[0] + g.n[1]) / 2) + '%;top:' + g.ty + '%;color:' + g.tc + '">' + esc(c.name) + '</div>';
+  h += '<div class="nn" id="noT" style="left:' + ((g.o[0] + g.o[1]) / 2) + '%;top:' + g.ty + '%;color:' + g.tc + '">' + esc(c.noShow) + '</div>';
+  $('ov').innerHTML = h; fit(g);
+  var left = c.need - c.pt, nxt = NEXT[c.rank];
+  $('pt').innerHTML = c.pt + '<small> / ' + c.need + 'pt</small>';
+  var nx = '';
+  if (c.rank === 'プラチナ') nx = 'あと' + left + 'ptで継続';
+  else nx = 'あと' + left + 'ptで' + nxt + 'カード';
+  if (c.rank === 'エコノミー' && c.gifts) { var ng = c.gifts.filter(function (x) { return x > c.pt; })[0]; if (ng && ng < c.need) nx += '（あと' + (ng - c.pt) + 'ptでプレゼント）'; }
+  $('nx').textContent = nx;
+  $('res').textContent = c.res && c.willDouble ? '次回予約 ' + jp(c.res) + 'までのご来店で、ポイント2倍' : '';
+  var p = c.plat, pb = $('plat');
+  if (p) {
+    var pct = p.amount != null ? Math.min(100, Math.round(p.amount / p.target * 100)) : 0, hh = '<div class="lbl">プラチナ更新まで</div>';
+    if (p.amount != null) {
+      hh += '<div class="amt">' + yen(p.amount) + '<small>/ ' + yen(p.target) + '</small></div><div class="bar"><i style="width:' + pct + '%"></i></div>';
+      hh += p.ok ? '<div class="rem">更新の条件を達成しています</div>' : '<div class="rem">あと ' + yen(Math.max(0, p.target - p.amount)) + ' で更新</div>';
+      if (p.deadline) hh += '<div class="dl">' + jp(p.deadline) + 'までに</div>';
+      hh += '<div class="note">' + jp(p.asof) + '時点の金額です（月初に更新）。<br>施術のご利用額、税込。ポイントでの更新もできます。</div>';
+    } else {
+      hh += '<div class="rem" style="margin-top:6px">金額は月初に更新されます</div>' + (p.deadline ? '<div class="dl">' + jp(p.deadline) + 'までに</div>' : '') + '<div class="note">年間のご利用額が' + yen(p.target) + '（税込）以上、または' + p.need + 'ポイントで更新できます。</div>';
+    }
+    pb.innerHTML = hh; pb.hidden = false;
+  } else pb.hidden = true;
+}
+function fit(g) {                                   // 長いお名前は縮めて枠に収める
+  var cv = $('cv'), W = cv.clientWidth || 360, u = W / 100; cv.style.setProperty('--u', u + 'px');
+  [['nmT', g.n, 3.9], ['noT', g.o, 3.9]].forEach(function (a) {
+    var el = $(a[0]); if (!el) return; var box = (a[1][1] - a[1][0]) / 100 * W * 0.93; el.style.fontSize = (u * a[2]) + 'px';
+    var w = el.scrollWidth; if (w > box) el.style.fontSize = (u * a[2] * box / w) + 'px';
+  });
+}
+window.addEventListener('resize', function () { if (LAST && STATE === 'linked') fit(GEO[LAST.card.rank] || GEO['エコノミー']); });
+if (window.ResizeObserver) new ResizeObserver(function () { if (LAST && STATE === 'linked') fit(GEO[LAST.card.rank] || GEO['エコノミー']); }).observe($('cv'));
+
+boot();
+})();
+</script>
+</body>
+</html>
