@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Day&Night お客様カルテ</title>
 <style>body{font-family:sans-serif;max-width:460px;margin:auto;padding:14px;background:#f4f4f4}input,button{font-size:20px;padding:12px;width:100%;box-sizing:border-box;margin:6px 0}button,.btn{background:#06c755;color:#fff;border:0;border-radius:8px}
-.btn{display:block;text-align:center;text-decoration:none;font-size:20px;padding:14px;margin:10px 0}summary{font-size:15px;color:#555;padding:8px 0}
+.btn{display:block;text-align:center;text-decoration:none;font-size:20px;padding:14px;margin:10px 0}.btn.sub{background:#fff;color:#06c755;border:2px solid #06c755;font-size:17px;padding:12px}summary{font-size:15px;color:#555;padding:8px 0}
 .art{position:relative;width:100%;aspect-ratio:1426/840;background-size:100% 100%;border-radius:14px;overflow:hidden;margin:10px 0}
 .cell{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#d4a017);color:#4a3000;font-size:calc(var(--u,3px)*3.1);line-height:1.2;font-weight:bold}
 .cell.f{border-radius:28%}
@@ -10,6 +10,7 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 const LIFF_ID='2012622591-ByCxeAxO',API='https://script.google.com/macros/s/AKfycbxAcMc2iwDj_PDVk_sZ0Hq-5K4UVwXz-KH182nEv2Bd_ilm1M1s86tWWtwBGli8vsDnAA/exec',OA='@333fguor';
+const TALK='https://line.me/R/ti/p/'+encodeURIComponent(OA);
 const GEO={"エコノミー":{"img":"card_eco.png","c":[[31.28,7.26,12.55,21.31,0],[43.01,7.26,12.55,21.31,0],[54.74,7.26,12.55,21.31,0],[66.47,7.26,12.55,21.31,0],[81.63,8.33,11.29,19.05,1],[31.28,29.17,12.55,21.31,0],[43.01,29.17,12.55,21.31,0],[54.74,29.17,12.55,21.31,0],[66.47,29.17,12.55,21.31,0],[81.63,30.36,11.29,19.05,1],[31.28,50.95,12.55,21.31,0],[43.01,50.95,12.55,21.31,0],[54.74,50.95,12.55,21.31,0],[66.47,50.95,12.55,21.31,0],[81.63,52.5,11.29,19.05,1]],"n":[9.5,51.9],"o":[69.1,88.7]},"ビジネス":{"img":"card_biz.png","c":[[31.28,11.79,12.48,21.19,0],[42.65,11.79,12.48,21.19,0],[54.03,11.79,12.48,21.19,0],[65.41,11.79,12.48,21.19,0],[76.79,11.79,12.48,21.19,0],[31.28,33.33,12.41,21.07,0],[42.8,33.33,12.41,21.07,0],[54.32,33.33,12.41,21.07,0],[65.84,33.33,12.41,21.07,0],[79.17,34.4,11.01,18.69,1]],"n":[9.5,50.1],"o":[69.1,88.7]},"ファースト":{"img":"card_first.png","c":[[33.03,5.12,13.6,23.1,0],[45.16,5.12,13.6,23.1,0],[57.29,5.12,13.6,23.1,0],[69.42,5.12,13.6,23.1,0],[81.56,5.12,13.6,23.1,0],[33.03,28.1,13.6,23.1,0],[45.16,28.1,13.6,23.1,0],[57.29,28.1,13.6,23.1,0],[69.42,28.1,13.6,23.1,0],[82.75,29.52,12.41,21.43,1]],"n":[9.5,51.9],"o":[71.2,88.7]}};
 let K='',E='',S='',PN='';
 const $=i=>document.getElementById(i),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),md=d=>d?(+d.slice(5,7))+'/'+(+d.slice(8,10)):'';
@@ -29,8 +30,7 @@ function handle(r){if(r.error){$('app').innerHTML='<p class=e>'+esc(r.error)+'</
  if(r.needLink){landing();return}if(r.pending){PN=r.name;pendView();return}render(r.card,r)}
 function landing(){document.title='お客様カルテ';$('app').innerHTML=`<h3>お客様カルテのご登録</h3><p>お名前（フルネーム）を入れてください。</p>
  <input id=nm placeholder="山田 花子"><button onclick="enroll()">登録する</button><div id=er class=e></div>
- <small>LINEのアカウントとお名前を、お客様カルテとして記録します。${E?'ご来店の日時も、受付のために記録します。':''}</small>
- <details style="margin-top:22px"><summary>すでに紙のカードをお持ちの方、スタッフからコードを受け取った方はこちら</summary>
+ <details style="margin-top:22px"><summary>連携コードをお持ちの方はこちら</summary>
  <input id=cd inputmode=numeric maxlength=6 placeholder="連携コード（6桁）"><button style="background:#555" onclick="link()">コードで連携する</button><div id=er2 class=e></div></details>`}
 const oaUrl=n=>'https://line.me/R/oaMessage/'+encodeURIComponent(OA)+'/?'+encodeURIComponent('【お客様カルテ】'+n);
 async function enroll(){const n=$('nm').value.trim();if(!n){$('er').textContent='お名前を入れてください';return}
@@ -44,8 +44,9 @@ function pendView(){document.title='お客様カルテ';$('app').innerHTML=`<h3>
 async function link(){try{const r=await call({action:'link',code:$('cd').value});if(r.error){$('er2').textContent=r.error;return}
  if(K){const s=await call({action:'scan',key:K});render(s.card||r.card,s)}else if(E){const s=await call({action:'entry',key:E,store:S});render(s.card||r.card,s)}else render(r.card,{})}catch(e){$('er2').textContent='通信に失敗しました。もう一度お試しください'}}
 function render(r,x){x=x||{};document.title='ポイントカード';
- const bn=x.added?'<div class=ok>ポイントを付けました（+'+x.added+'pt）'+(x.special?'<br>おめでとうございます！スタッフにお声がけください':'')+'</div>':(x.already?'<div class=m>本日はすでにポイントが付いています</div>':(x.arrived?'<div class=ok>ご来店ありがとうございます</div>':''));
+ const bn=x.added?'<div class=ok>ポイントを付けました（+'+x.added+'pt）</div>':(x.already?'<div class=m>本日はすでにポイントが付いています</div>':(x.arrived?'<div class=ok>ご来店ありがとうございます</div>':''));
  $('app').innerHTML=bn+cardHTML(r,'')+`<div class=cap>${r.pt} / ${r.need}pt　あと${Math.max(r.need-r.pt,0)}pt で${r.rank==='ファースト'?'継続':'ランクアップ'}${r.expire?'<br>ファースト期限 '+r.expire:''}</div>
- ${r.willDouble?'<div class=m>次回予約あり。'+esc(r.reserve)+'までのご来店でポイント2倍</div>':''}`;setU()}
+ ${r.willDouble?'<div class=m>次回予約あり。'+esc(r.reserve)+'までのご来店でポイント2倍</div>':''}
+ <a class="btn sub" href="${TALK}">公式LINEのトークを開く</a>`;setU()}
 main();
 </script></body></html>
