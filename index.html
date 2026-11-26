@@ -201,7 +201,8 @@ function banner(r) {
   else if (r.granted === false) h.push(['plain', '本日はすでにポイントがついています']);
   if (r.gift) h.push(['gift', '🎁 プレゼントがあります']);
   (r.msgs || []).forEach(function (m) {
-    if (/^プラチナカード達成/.test(m)) h.push(['up', 'プラチナカード達成！更新ありがとうございます']);
+    if (/^プラチナクラス達成/.test(m)) h.push(['up', 'プラチナクラス達成！更新ありがとうございます']);
+    else if (/ファーストクラス達成/.test(m) && /ファーストクラスのまま/.test(m)) h.push(['up', 'ファーストクラス達成！引き続き、ファーストクラスです']);
     else if (/達成/.test(m)) h.push(['up', m.replace(/新しい.*$/, '').replace(/！$/, '') + '！ 次のご来店から特典が変わります']);
     else if (/戻ります|更新しました/.test(m)) h.push(['up', m.split('。')[0]]);
   });
@@ -225,8 +226,8 @@ function drawCard(r) {
   $('pt').innerHTML = c.pt + '<small> / ' + c.need + 'pt</small>';
   var nx = '';
   if (c.rank === 'プラチナ') nx = 'あと' + left + 'ptで継続';
-  else if (c.rank === 'ファースト' && c.first && c.first.deadline) nx = c.first.over ? 'あと' + left + 'ptで新しいファーストカード' : 'あと' + left + 'ptでプラチナカード（' + jp(c.first.deadline) + 'まで）';
-  else nx = 'あと' + left + 'ptで' + nxt + 'カード';
+  else if (c.rank === 'ファースト' && c.first && c.first.deadline) nx = c.first.over ? 'あと' + left + 'ptで新しいファーストクラスのカード' : 'あと' + left + 'ptでプラチナクラス（' + jp(c.first.deadline) + 'まで）';
+  else nx = 'あと' + left + 'ptで' + nxt + 'クラス';
   if (c.rank === 'エコノミー' && c.gifts) { var ng = c.gifts.filter(function (x) { return x > c.pt; })[0]; if (ng && ng < c.need) nx += '（あと' + (ng - c.pt) + 'ptでプレゼント）'; }
   $('nx').textContent = nx;
   $('res').textContent = c.res && c.willDouble ? '次回予約 ' + jp(c.res) + 'までのご来店で、ポイント2倍' : '';
