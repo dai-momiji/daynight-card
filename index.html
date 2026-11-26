@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Day&Night お客様カルテ</title>
+<title>Day&Night ポイントカード</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -25,6 +25,8 @@ input.t{width:100%;padding:14px;border:1.5px solid #ddd;border-radius:12px;font-
 input.t:focus{outline:none;border-color:#1d1f24}
 .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:700;background:#1d1f24;color:#fff;margin-top:14px;cursor:pointer;text-align:center;text-decoration:none}
 .btn.sub{background:#fff;color:#06c755;border:2px solid #06c755}
+.btn.line{background:#06c755;color:#fff}
+.must{background:#fff8e1;border:1.5px solid #f0c64a;border-radius:14px;padding:12px 14px;margin:14px 0 0;font-size:14px;color:#5b4300}.must b{display:block;font-size:16px;color:#3b2a00;margin-bottom:2px}
 .btn.gray{background:#e9e8e4;color:#1d1f24}
 .btn:disabled{opacity:.4}
 .err{color:#c01d2a;font-size:14px;margin-top:10px;min-height:1px}
@@ -51,7 +53,7 @@ details{margin-top:14px}summary{font-size:14px;color:#666;cursor:pointer;padding
 </head>
 <body>
 <div class="wrap">
-  <h1><small>Day&amp;Night</small>お客様カルテ</h1>
+  <h1><small>Day&amp;Night</small><span id="ttl">ポイントカード</span></h1>
 
   <div id="loading" class="spin">読み込み中…</div>
 
@@ -83,8 +85,9 @@ details{margin-top:14px}summary{font-size:14px;color:#666;cursor:pointer;padding
     <div class="box">
       <h2>ありがとうございます</h2>
       <p id="pendTxt">スタッフが確認しています。そのままお待ちください。</p>
-      <p style="font-size:13px;color:#888">確認が終わると、この画面にカードが出ます。</p>
-      <a id="pendOa" class="btn sub" href="#">公式LINEにお名前を送る（任意）</a>
+      <div class="must"><b>公式LINEにお名前を送ってください</b>下のボタンを押すとトーク画面が開きます。お名前が入力されているので、そのまま送信してください。</div>
+      <a id="pendOa" class="btn line" href="#">公式LINEにお名前を送る</a>
+      <p style="font-size:13px;color:#888;margin:14px 0 0">スタッフの確認が終わると、この画面にカードが出ます。</p>
       <button id="pendRe" class="btn gray">更新する</button>
     </div>
   </div>
@@ -106,7 +109,7 @@ details{margin-top:14px}summary{font-size:14px;color:#666;cursor:pointer;padding
 (function () {
 'use strict';
 /* ===== ここだけ書き換える（今までのURLをそのまま貼る） ===== */
-var EXEC_URL = 'https://script.google.com/macros/s/AKfycbxAcMc2iwDj_PDVk_sZ0Hq-5K4UVwXz-KH182nEv2Bd_ilm1M1s86tWWtwBGli8vsDnAA/exec';
+var EXEC_URL = 'https://script.google.com/macros/s/ここにウェブアプリのURL/exec';
 var LIFF_ID = '2012622591-ByCxeAxO';
 var OA_URL = 'https://line.me/R/ti/p/@333fguor', OA_ID = '@333fguor';
 var IMG_VER = '4';
@@ -134,7 +137,11 @@ var $ = function (id) { return document.getElementById(id); };
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function jp(d) { var m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[1] + '年' + (+m[2]) + '月' + (+m[3]) + '日' : ''; }
 function yen(n) { return '¥' + Number(n || 0).toLocaleString('ja-JP'); }
-function show(id) { ['loading', 'landing', 'pend', 'card', 'errBox'].forEach(function (x) { $(x).hidden = x !== id; }); }
+function show(id) {
+  ['loading', 'landing', 'pend', 'card', 'errBox'].forEach(function (x) { $(x).hidden = x !== id; });
+  var ttl = id === 'landing' ? 'お客様カルテ' : 'ポイントカード';       // 名前を入れる最初の画面だけ「お客様カルテ」
+  $('ttl').textContent = ttl; document.title = 'Day&Night ' + ttl;
+}
 var qs = new URLSearchParams(location.search);
 var KEY = qs.get('e') || '', STORE = qs.get('s') || '';
 // LIFFのURLに付けた値は、ログイン後に liff.state に入ることがある
@@ -163,8 +170,8 @@ function apply(r, fromPoll) {
   STATE = r.state; clearInterval(poller);
   if (r.state === 'linked') { drawCard(r, fromPoll); show('card'); }
   else if (r.state === 'pending') {
-    show('pend'); var nm = r.name || ''; $('pendTxt').textContent = (nm ? nm + ' 様、' : '') + 'スタッフが確認しています。そのままお待ちください。';
-    $('pendOa').href = 'https://line.me/R/oaMessage/' + OA_ID + '/?' + encodeURIComponent('お名前：' + nm + (r.type ? '（' + r.type + '）' : ''));
+    show('pend'); var nm = r.name || ''; $('pendTxt').textContent = (nm ? nm + ' 様、' : '') + 'お名前を受け付けました。';
+    $('pendOa').href = 'https://line.me/R/oaMessage/' + OA_ID + '/?' + encodeURIComponent('お名前：' + nm);
     poller = setInterval(function () { call({ action: 'card' }).then(function (x) { if (x.state === 'linked') { x.justRegistered = true; apply(x, true); } }).catch(function () { }); }, 5000);
   } else { show('landing'); }
 }
