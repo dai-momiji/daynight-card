@@ -45,6 +45,14 @@ details{margin-top:14px}summary{font-size:14px;color:#666;cursor:pointer;padding
 .info .nx{font-size:14px;color:#444}
 .res{margin:4px 2px 0;font-size:14px;color:#8a4b00;font-weight:700}
 .res .rs2{font-size:12.5px;font-weight:600;margin-top:2px}
+.kw{margin-top:12px;text-align:center;padding:16px 14px;border-radius:18px}
+.kw .kt{font-size:17px;font-weight:800;letter-spacing:.04em}
+.kw .kb{font-size:16px;font-weight:800;margin-top:6px;line-height:1.6}
+.kw .ks{font-size:12.5px;margin-top:8px;color:#7a6320}
+.kw .kth{font-size:13px;margin-top:10px;font-weight:700}
+.kw.avail{background:linear-gradient(135deg,#fff8de,#f7e6ad 55%,#fff6d3);border:1.5px solid #e2bd55;color:#5b4300;box-shadow:0 2px 10px rgba(205,160,40,.22)}
+.kw.used{background:#efeeea;border:1.5px solid #dcdad4;color:#6b6e75;box-shadow:none}
+.kw.used .kt{font-size:18px;color:#55585f}.kw.used .ks{color:#8a8d94}
 .plat{margin-top:12px}
 .plat .lbl{font-size:13px;color:#777}.plat .amt{font-size:34px;font-weight:800;letter-spacing:-.01em}.plat .amt small{font-size:14px;color:#888;font-weight:600;margin-left:4px}
 .bar{height:10px;background:#ececec;border-radius:6px;overflow:hidden;margin:8px 0 10px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#9aa1ab,#5c6470)}
@@ -148,6 +156,7 @@ details{margin-top:14px}summary{font-size:14px;color:#666;cursor:pointer;padding
     <div class="cv" id="cv"><img id="cimg" alt=""><div id="ov"></div></div>
     <div class="info"><span class="pt" id="pt"></span><span class="nx" id="nx"></span></div>
     <div class="res" id="res"></div>
+    <div class="box kw" id="kw" hidden></div>
     <div class="box plat" id="plat" hidden></div>
     <a id="oaBtn" class="btn sub" href="https://line.me/R/ti/p/@dn2011">公式LINEのトークを開く</a>
   </div>
@@ -285,6 +294,14 @@ function drawCard(r) {
   var rsv = '';                                     // 次回のご予約: 予約日が今日以降なら、いつでも日付を出す（2倍の対象なら、その一言も）
   if (c.res && (c.resUp != null ? c.resUp : c.res >= ymdNow())) rsv = '<div>次回のご予約　' + jpw(c.res) + '</div>' + (c.willDouble ? '<div class="rs2">ご予約日までのご来店で、ポイント2倍</div>' : '');
   $('res').innerHTML = rsv;
+  var kb = $('kw'), k = c.kw;                       // 極トリートメント（更新特典）。権利なしの方には何も出さない
+  if (k && k.s === 'avail') {
+    kb.className = 'box kw avail';
+    kb.innerHTML = '<div class="kt">更新特典✨</div><div class="kb">このカードの間に１回<br>極にグレードアップできます✨</div><div class="ks">ご利用の際には担当とご相談ください。</div><div class="kth">いつもありがとうございます</div>'; kb.hidden = false;
+  } else if (k && k.s === 'used') {
+    kb.className = 'box kw used';
+    kb.innerHTML = '<div class="kt">極　ご利用済み</div>' + (k.d ? '<div class="ks">' + esc(jp(k.d)) + 'にご利用いただきました</div>' : '') + '<div class="kth">いつもありがとうございます</div>'; kb.hidden = false;
+  } else { kb.hidden = true; kb.innerHTML = ''; }
   var p = c.plat, pb = $('plat');
   if (p) {
     var pct = p.amount != null ? Math.min(100, Math.round(p.amount / p.target * 100)) : 0, hh = '<div class="lbl">プラチナ更新まで</div>';
