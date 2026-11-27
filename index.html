@@ -382,7 +382,7 @@ function mkPlan(r) {
   var rk = 'dn_trip_' + c.no, rec = sget(rk), start = c.start || '', i;
   if (!fresh && (!c.granted || (rec && rec.day === td) || !canStore())) return null;   // 同じ日に何度も出さない
   var has = function (re) { return msgs.some(function (m) { return re.test(m); }); };
-  var done = has(/^プラチナクラス達成/), welcome = has(/^ファーストクラス達成！新しいプラチナ/), renew = has(/金額条件で更新しました/);
+  var done = has(/^プラチナクラス達成/), welcome = has(/^ファーストクラス達成！(新しいプラチナ|$)/), renew = has(/金額条件で更新しました/);
   var tp = 0; if (c.granted && c.dates) for (i = c.dates.length - 1; i >= 0 && c.dates[i] === td; i--) tp++;   // 今日つくポイント（2倍なら2つ）
   var p = c.plat, unit = p && p.target > 0 ? p.target / need : 0, A = (p && p.amount != null && unit > 0) ? Math.floor(p.amount / unit + 1e-9) : 0;
   var N = Math.min(need, Math.max(P, A)), same = rec && rec.start === start, from, kind = 'hop';
