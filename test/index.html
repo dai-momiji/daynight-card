@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Day&Night ポイントカード</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#f4f3f1;color:#1d1f24;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 40px}
+[hidden]{display:none!important}
+h1{font-size:18px;margin:2px 0 14px;text-align:center;letter-spacing:.06em}
+h1 small{display:block;font-size:12px;color:#8a8d94;font-weight:500;letter-spacing:.2em;margin-bottom:2px}
+.box{background:#fff;border-radius:18px;padding:18px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:12px}
+.box h2{font-size:17px;margin:0 0 6px}
+.box p{margin:6px 0;color:#555;font-size:14px}
+.choice{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.choice label{display:flex;align-items:center;gap:12px;border:2px solid #e4e4e0;border-radius:14px;padding:14px;font-weight:700;cursor:pointer;font-size:16px}
+.choice input{width:20px;height:20px;accent-color:#1d1f24}
+.choice label small{display:block;font-weight:500;color:#777;font-size:12px}
+.choice label.on{border-color:#1d1f24;background:#fafaf8}
+label.f{display:block;font-size:13px;font-weight:700;color:#666;margin:12px 0 4px}
+input.t{width:100%;padding:14px;border:1.5px solid #ddd;border-radius:12px;font-size:18px;background:#fff}
+input.t:focus{outline:none;border-color:#1d1f24}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:700;background:#1d1f24;color:#fff;margin-top:14px;cursor:pointer;text-align:center;text-decoration:none}
+.btn.sub{background:#fff;color:#06c755;border:2px solid #06c755}
+.btn.line{background:#06c755;color:#fff}
+.must{background:#fff8e1;border:1.5px solid #f0c64a;border-radius:14px;padding:12px 14px;margin:14px 0 0;font-size:14px;color:#5b4300}.must b{display:block;font-size:16px;color:#3b2a00;margin-bottom:2px}
+.btn.gray{background:#e9e8e4;color:#1d1f24}
+.btn:disabled{opacity:.4}
+.err{color:#c01d2a;font-size:14px;margin-top:10px;min-height:1px}
+details{margin-top:14px}summary{font-size:14px;color:#666;cursor:pointer;padding:6px 0}
+.banner{border-radius:14px;padding:12px 14px;margin-bottom:12px;font-weight:700;font-size:15px}
+.banner.ok{background:#e6f6ec;color:#0b6b3a}.banner.gift{background:#fde8f1;color:#a21c57}.banner.up{background:#fff3d6;color:#7a5200}.banner.plain{background:#eceae6;color:#555}
+.banner div+div{margin-top:4px}
+/* カード */
+.cv{position:relative;width:100%;aspect-ratio:1005/591;border-radius:12px;overflow:hidden;background:#ddd;box-shadow:0 4px 14px rgba(0,0,0,.18);--u:3.5px}
+.cv img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cell{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#f6d77a,#e3ac22 70%);color:#3b2a00;font-weight:800;line-height:1.08;text-align:center;box-shadow:0 0 0 calc(var(--u)*.35) rgba(255,255,255,.92);font-size:calc(var(--u)*3.0);border-radius:50%;letter-spacing:-.02em}
+.cell.fr{border-radius:22%}
+.nm,.nn{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:700;text-align:center}
+.info{margin:12px 2px 2px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.info .pt{font-size:22px;font-weight:800}.info .pt small{font-size:13px;color:#777;font-weight:600}
+.info .nx{font-size:14px;color:#444}
+.res{margin:4px 2px 0;font-size:14px;color:#8a4b00;font-weight:700}
+.res .rs2{font-size:12.5px;font-weight:600;margin-top:2px}
+.plat{margin-top:12px}
+.plat .lbl{font-size:13px;color:#777}.plat .amt{font-size:34px;font-weight:800;letter-spacing:-.01em}.plat .amt small{font-size:14px;color:#888;font-weight:600;margin-left:4px}
+.bar{height:10px;background:#ececec;border-radius:6px;overflow:hidden;margin:8px 0 10px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#9aa1ab,#5c6470)}
+.plat .rem{font-size:20px;font-weight:800}.plat .dl{font-size:16px;font-weight:600;margin-top:2px}.plat .note{font-size:12px;color:#8a8d94;margin-top:8px;line-height:1.6}
+.spin{text-align:center;padding:60px 0;color:#888}
+/* ===== プラチナの旅の演出（CSSとSVGだけ。画像・動画は使わない） ===== */
+#fly{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));background:linear-gradient(175deg,var(--s1),var(--s2));color:#fff;opacity:0;transition:opacity .5s;overflow:hidden;cursor:pointer;-webkit-user-select:none;user-select:none}
+#fly.on{opacity:1}
+#fly .fx,#fly .dc{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#fly .fx i{position:absolute;display:block;will-change:transform}
+#fly .fx i.snow{top:0;width:var(--z);height:var(--z);border-radius:50%;background:#fff;opacity:.85;animation:fall var(--d) linear var(--dl) infinite}
+#fly .fx i.petal{top:0;width:calc(var(--z)*1.4);height:var(--z);border-radius:80% 0 80% 0;background:#ffc4d6;opacity:.9;animation:fall var(--d) linear var(--dl) infinite}
+#fly .fx i.leafg,#fly .fx i.leafo,#fly .fx i.leafr{top:0;width:calc(var(--z)*1.6);height:calc(var(--z)*.9);border-radius:100% 0 100% 0;animation:fall var(--d) linear var(--dl) infinite}
+#fly .fx i.leafg{background:#8fd18a}#fly .fx i.leafo{background:#f2a444}#fly .fx i.leafr{background:#e0583a}
+#fly .fx i.rain{top:0;width:1.5px;height:calc(var(--z)*4);background:rgba(255,255,255,.45);animation:rain var(--d) linear var(--dl) infinite}
+#fly .fx i.star{width:var(--z);height:var(--z);border-radius:50%;background:#fff;animation:tw var(--d) ease-in-out var(--dl) infinite}
+@keyframes fall{from{transform:translate3d(0,-8vh,0) rotate(0)}to{transform:translate3d(var(--dx),108vh,0) rotate(var(--r))}}
+@keyframes rain{from{transform:translate3d(0,-10vh,0)}to{transform:translate3d(-30px,108vh,0)}}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:1}}
+#fly .dc.sun:after{content:"";position:absolute;left:50%;bottom:-70px;width:280px;height:280px;margin-left:-140px;border-radius:50%;background:radial-gradient(circle,#ffe39a 0,#ffb347 42%,rgba(255,179,71,0) 70%)}
+#fly .dc.moon:after{content:"";position:absolute;right:26px;top:34px;width:60px;height:60px;border-radius:50%;background:#fff4c8;box-shadow:0 0 40px 12px rgba(255,244,200,.4)}
+#fly .tr{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));display:block}
+#fly .tr svg{display:block;width:100%;height:auto}
+#fly .tr.a{left:10px;width:62px}#fly .tr.b{right:12px;width:44px;opacity:.9}
+#fly .tr .l1{animation:tw 1.5s ease-in-out infinite}#fly .tr .l2{animation:tw 1.5s ease-in-out .5s infinite}#fly .tr .l3{animation:tw 1.5s ease-in-out 1s infinite}
+#fly .bx{position:relative;width:100%;max-width:360px;text-align:center}
+#fly .cls{font-size:12px;letter-spacing:.34em;opacity:.85;margin-bottom:6px}
+#fly h2{font-size:clamp(17px,5.8vw,22px);margin:0 0 16px;letter-spacing:.04em;line-height:1.35}
+#fly .bp{position:relative;border-radius:16px;background:linear-gradient(135deg,#fbf9f4,#d8d4ca 55%,#f3f0e9);color:#1d1f24;padding:13px 16px 16px;box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:left;opacity:0;transform:translateY(24px)}
+#fly.on .bp{animation:up .6s .15s ease-out forwards}
+@keyframes up{to{opacity:1;transform:none}}
+#fly .hd{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.16em;color:#6b6f78;font-weight:700}
+#fly .rt{display:flex;align-items:center;margin:10px 0 6px}
+#fly .ap{width:78px;flex:none}#fly .ap b{display:block;font-size:34px;line-height:1;letter-spacing:.04em}#fly .ap small{display:block;font-size:12px;color:#555;margin-top:4px;white-space:nowrap}#fly .ap.r{text-align:right}
+#fly .pa{position:relative;flex:1;height:36px;margin:0 18px}
+#fly .pa:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:2px dashed #a5a39a}
+#fly .pm{position:absolute;left:0;top:50%;width:0;height:0}
+#fly .pl{position:absolute;left:-13px;top:-13px;width:26px;height:26px;fill:#1d1f24;transform:rotate(90deg)}
+#fly .go .pm{animation:fly 1.15s .35s ease-in-out forwards}
+#fly .go .pl{animation:arc 1.15s .35s ease-in-out forwards}
+@keyframes fly{to{transform:translateX(var(--w))}}
+@keyframes arc{0%{transform:translateY(0) rotate(68deg)}50%{transform:translateY(-12px) rotate(90deg)}100%{transform:translateY(0) rotate(112deg)}}
+#fly .ft{font-size:12px;color:#555;font-weight:700;margin-top:2px}
+#fly .st{position:absolute;right:10px;bottom:-34px;width:74px;height:74px;border-radius:50%;border:3px double #c2362b;color:#c2362b;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1.25;text-align:center;white-space:nowrap;background:rgba(255,246,240,.9);opacity:0;transform:rotate(-14deg) scale(2.2)}
+#fly .st span{font-size:var(--sf,14px)}#fly .st small{font-size:10px;letter-spacing:.04em}
+#fly .go .st{animation:stamp .35s 1.55s cubic-bezier(.2,1.4,.4,1) forwards}
+#fly .stay .pa,#fly .stay .ap.r{display:none}#fly .stay .ap{width:auto}#fly .stay.go .st{animation-delay:.5s}
+@keyframes stamp{to{opacity:.95;transform:rotate(-14deg) scale(1)}}
+#fly .msg{margin-top:46px;font-size:16px;font-weight:700;line-height:1.55;text-wrap:balance;opacity:0;transition:opacity .5s}
+#fly .sb{margin-top:8px;text-wrap:balance;font-size:13px;opacity:0;transition:opacity .5s .15s;line-height:1.6;color:rgba(255,255,255,.88)}
+#fly .msg.in{opacity:1}#fly .sb.in{opacity:1}
+#fly .sk{margin-top:18px;border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:9px 24px;font-size:14px;font-weight:700;opacity:0;transition:opacity .5s;cursor:pointer}
+#fly .sk.in{opacity:1}
+@media (prefers-reduced-motion:reduce){#fly{transition:none}#fly .fx{display:none}#fly .bp{opacity:1;transform:none;animation:none!important}#fly .go .pm{animation:none;transform:translateX(var(--w))}#fly .go .pl{animation:none;transform:rotate(90deg)}#fly .go .st{animation:none;opacity:.95;transform:rotate(-14deg)}#fly .tr *{animation:none!important}#fly .msg,#fly .sb,#fly .sk{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><small>Day&amp;Night</small><span id="ttl">ポイントカード</span></h1>
+
+  <div id="loading" class="spin">読み込み中…</div>
+
+  <!-- 初回：名前と、新規／紙カード -->
+  <div id="landing" hidden>
+    <div class="box">
+      <h2>はじめまして</h2>
+      <p>お客様カルテをつくります。当てはまる方を選んでお名前を入力してください。</p>
+      <div class="choice" id="choice">
+        <label><input type="radio" name="kind" value="new"><span>はじめてのご来店<small>これから新しくつくります</small></span></label>
+        <label><input type="radio" name="kind" value="paper"><span>紙のポイントカードをお持ちの方<small>いまのポイントを引き継ぎます</small></span></label>
+      </div>
+      <label class="f" for="nm">お名前（フルネーム）</label>
+      <input id="nm" class="t" placeholder="例 山田 花子" autocomplete="name">
+      <button id="go" class="btn">つづける</button>
+      <div id="landErr" class="err"></div>
+    </div>
+    <details class="box" id="codeBox">
+      <summary>連携コードを発行してもらった方はこちら</summary>
+      <label class="f" for="code">連携コード</label>
+      <input id="code" class="t" inputmode="numeric" placeholder="6けたの数字" autocomplete="off">
+      <button id="codeGo" class="btn gray">つなぐ</button>
+      <div id="codeErr" class="err"></div>
+    </details>
+  </div>
+
+  <!-- 確認待ち -->
+  <div id="pend" hidden>
+    <div class="box">
+      <h2>ありがとうございます</h2>
+      <p id="pendTxt">スタッフが確認しています。そのままお待ちください。</p>
+      <div class="must"><b>公式LINEにお名前を送ってください</b>下のボタンを押すとトーク画面が開きます。お名前が入力されているので、そのまま送信してください。</div>
+      <a id="pendOa" class="btn line" href="#">公式LINEにお名前を送る</a>
+      <p style="font-size:13px;color:#888;margin:14px 0 0">スタッフの確認が終わると、この画面にカードが出ます。</p>
+      <button id="pendRe" class="btn gray">更新する</button>
+    </div>
+  </div>
+
+  <!-- カード -->
+  <div id="card" hidden>
+    <div id="banner"></div>
+    <div class="cv" id="cv"><img id="cimg" alt=""><div id="ov"></div></div>
+    <div class="info"><span class="pt" id="pt"></span><span class="nx" id="nx"></span></div>
+    <div class="res" id="res"></div>
+    <div class="box plat" id="plat" hidden></div>
+    <a id="oaBtn" class="btn sub" href="https://line.me/R/ti/p/@dn2011">公式LINEのトークを開く</a>
+  </div>
+
+  <div id="errBox" class="box" hidden><h2>うまく開けませんでした</h2><p id="errTxt"></p><button id="retry" class="btn">もう一度ひらく</button></div>
+</div>
+
+<script>
+(function () {
+'use strict';
+/* ===== 設定（URLは入れてあります。デプロイを作り直してURLが変わった時だけ書き換える） ===== */
+var EXEC_URL = 'https://script.google.com/macros/s/AKfycbxoAz6Q4mZ1rubjTbIkqdMOquyM1wyJ_xPzkIvdAyZQDX6GBYc0j9ceDSbvImycfBfI/exec';
+var LIFF_ID = '2012831074-StuSecSS';
+var OA_URL = 'https://line.me/R/ti/p/@dn2011', OA_ID = '@dn2011';
+var IMG_VER = '6';
+/* ============================================================= */
+
+/* カードの絵ごとの「丸の位置」: [中心x%, 中心y%, 幅%, 高さ%, 枠(プレゼント)か] — 左上のポイントから順番 */
+var C = function (x, y, w, h) { return [x, y, w, h, 0]; }, F = function (x, y, w, h) { return [x, y, w, h, 1]; };
+var GEO = {
+  'エコノミー': { img: 'card_eco.png', ar: '1005/591', ty: 90.3, tc: '#111', n: [9.6, 52], o: [68.6, 88.4], s: [
+    C(37.35, 22.18, 11.34, 19.28), C(49.03, 22.17, 11.34, 19.28), C(60.18, 22.17, 11.34, 19.29), C(71.94, 22.17, 11.34, 19.28), F(84.63, 22.08, 9.63, 16.38),
+    C(37.35, 43.75, 11.35, 19.31), C(49.03, 43.75, 11.36, 19.32), C(60.19, 43.75, 11.35, 19.31), C(71.94, 43.76, 11.34, 19.28), F(84.53, 43.57, 9.63, 16.38)] },
+  'ビジネス': { img: 'card_biz.png', ar: '1005/591', ty: 90.3, tc: '#111', n: [9.6, 52], o: [68.6, 88.4], s: [
+    C(37.35, 22.17, 11.36, 19.32), C(49.03, 22.17, 11.36, 19.32), C(60.19, 22.18, 11.37, 19.33), C(71.94, 22.16, 11.35, 19.3), C(82.97, 22.4, 11.37, 19.34),
+    C(37.35, 43.74, 11.37, 19.33), C(49.02, 43.75, 11.37, 19.34), C(60.18, 43.74, 11.35, 19.31), C(71.92, 43.75, 11.36, 19.31), F(84.58, 43.65, 9.55, 16.51)] },
+  'ファースト': { img: 'card_first.png', ar: '1005/591', ty: 90.3, tc: '#111', n: [9.9, 54], o: [71, 88.1], s: [
+    C(39.56, 16.3, 12.14, 20.65), C(51.44, 16.29, 12.14, 20.64), C(63.97, 16.29, 12.14, 20.64), C(75.89, 16.55, 12.15, 20.66), C(88.45, 17.27, 12.14, 20.64),
+    C(39.56, 39.29, 12.15, 20.66), C(51.45, 39.29, 12.14, 20.64), C(63.96, 39.28, 12.14, 20.64), C(75.89, 39.93, 12.13, 20.63), F(88.61, 40.36, 10.35, 18)] },
+  'プラチナ': { img: 'card_platinum.png', ar: '1005/591', ty: 86.9, tc: '#f4f4f4', n: [9.7, 47.6], o: [66.6, 91.8], s: [
+    C(31.28, 19.61, 10.72, 18.23), C(43.19, 19.62, 10.71, 18.21), C(55.07, 19.62, 10.69, 18.18), C(66.97, 19.62, 10.7, 18.2), C(78.85, 19.62, 10.68, 18.16), C(90.75, 19.62, 10.71, 18.21),
+    C(31.35, 39.79, 10.71, 18.22), C(43.25, 39.8, 10.69, 18.17), C(55.13, 39.81, 10.69, 18.17), C(67.03, 39.8, 10.67, 18.15), C(78.91, 39.81, 10.69, 18.18), F(91.19, 40.1, 9.63, 16.24)] }
+};
+var NEXT = { 'エコノミー': 'ビジネス', 'ビジネス': 'ファースト', 'ファースト': 'プラチナ', 'プラチナ': 'プラチナ' };
+
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function jp(d) { var m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[1] + '年' + (+m[2]) + '月' + (+m[3]) + '日' : ''; }
+function jpw(d) { var m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})/); if (!m) return ''; var w = '日月火水木金土'.charAt(new Date(+m[1], +m[2] - 1, +m[3]).getDay()); return (+m[1] === new Date().getFullYear() ? '' : m[1] + '年') + (+m[2]) + '月' + (+m[3]) + '日（' + w + '）'; }
+function ymdNow() { var n = new Date(); return n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2); }
+function yen(n) { return '¥' + Number(n || 0).toLocaleString('ja-JP'); }
+function show(id) {
+  ['loading', 'landing', 'pend', 'card', 'errBox'].forEach(function (x) { $(x).hidden = x !== id; });
+  var ttl = id === 'landing' ? 'お客様カルテ' : 'ポイントカード';       // 名前を入れる最初の画面だけ「お客様カルテ」
+  $('ttl').textContent = ttl; document.title = 'Day&Night ' + ttl;
+}
+var qs = new URLSearchParams(location.search);
+var KEY = qs.get('e') || '', STORE = qs.get('s') || '';
+// LIFFのURLに付けた値は、ログイン後に liff.state に入ることがある
+try { var ls = qs.get('liff.state'); if (ls && !KEY) { var q2 = new URLSearchParams(ls.replace(/^\/?\??/, '')); KEY = q2.get('e') || ''; STORE = q2.get('s') || STORE; } } catch (e) { }
+var TOKEN = '', STATE = null, poller = null, LAST = null;
+
+function call(payload) {
+  payload.idToken = TOKEN;
+  return fetch(EXEC_URL, { method: 'POST', body: JSON.stringify(payload) }).then(function (r) { return r.json(); }).then(function (j) { if (j.error) throw new Error(j.error); return j; });
+}
+function fail(msg) { show('errBox'); $('errTxt').textContent = msg; }
+
+/* ---------- 起動 ---------- */
+function boot() {
+  show('loading');
+  liff.init({ liffId: LIFF_ID }).then(function () {
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+    TOKEN = liff.getIDToken();
+    if (!TOKEN) { liff.login({ redirectUri: location.href }); return; }
+    return KEY ? call({ action: 'entry', key: KEY, store: STORE }) : call({ action: 'card' });
+  }).then(function (r) { if (r) apply(r); }).catch(function (e) { fail(e.message || String(e)); });
+}
+$('retry').onclick = boot;
+
+function apply(r, fromPoll) {
+  STATE = r.state; clearInterval(poller);
+  if (r.state === 'linked') { drawCard(r, fromPoll); show('card'); tripCheck(r); }
+  else if (r.state === 'pending') {
+    show('pend'); var nm = r.name || ''; $('pendTxt').textContent = (nm ? nm + ' 様、' : '') + 'お名前を受け付けました。';
+    $('pendOa').href = 'https://line.me/R/oaMessage/' + OA_ID + '/?' + encodeURIComponent('お名前：' + nm);
+    poller = setInterval(function () { call({ action: 'card' }).then(function (x) { if (x.state === 'linked') { x.justRegistered = true; apply(x, true); } }).catch(function () { }); }, 5000);
+  } else { show('landing'); }
+}
+document.addEventListener('visibilitychange', function () { if (!document.hidden && TOKEN && STATE === 'linked') call({ action: 'card' }).then(function (r) { if (r.state === 'linked') { drawCard(r, true); tripCheck(r); } }).catch(function () { }); });
+
+/* ---------- 初回の入力 ---------- */
+var kind = '';
+$('choice').onchange = function (e) { kind = e.target.value; Array.prototype.forEach.call($('choice').children, function (l) { l.classList.toggle('on', l.querySelector('input').checked); }); };
+$('go').onclick = function () {
+  $('landErr').textContent = ''; var name = $('nm').value.trim();
+  if (!kind) { $('landErr').textContent = '「はじめて」か「紙のカードあり」を選んでください'; return; }
+  if (!name) { $('landErr').textContent = 'お名前を入力してください'; return; }
+  var b = this; b.disabled = true;
+  call({ action: 'enroll', name: name, type: kind, key: KEY, store: STORE }).then(apply).catch(function (e) { $('landErr').textContent = e.message; }).then(function () { b.disabled = false; });
+};
+$('codeGo').onclick = function () {
+  $('codeErr').textContent = ''; var b = this; b.disabled = true;
+  call({ action: 'link', code: $('code').value }).then(apply).catch(function (e) { $('codeErr').textContent = e.message; }).then(function () { b.disabled = false; });
+};
+$('pendRe').onclick = function () { call({ action: 'card' }).then(function (r) { if (r.state === 'linked') r.justRegistered = true; apply(r); }).catch(function (e) { fail(e.message); }); };
+
+/* ---------- カードの表示 ---------- */
+function banner(r) {
+  var h = [], c = r.card;
+  if (r.justRegistered) h.push(['ok', '登録ありがとうございます！今日のポイントがつきました']);
+  else if (r.granted) h.push(['ok', r.dbl ? '次回予約の特典で、今日はポイント2倍です！' : '今日のポイントがつきました']);
+  else if (r.granted === false) h.push(['plain', '本日はすでにポイントがついています']);
+  if (r.gift) h.push(['gift', '🎁 プレゼントがあります']);
+  (r.msgs || []).forEach(function (m) {
+    if (/^プラチナクラス達成/.test(m)) h.push(['up', 'プラチナクラス達成！更新ありがとうございます']);
+    else if (/ファーストクラス達成/.test(m) && /ファーストクラスのまま/.test(m)) h.push(['up', 'ファーストクラス達成！引き続き、ファーストクラスです']);
+    else if (/達成/.test(m)) h.push(['up', m.replace(/新しい.*$/, '').replace(/！$/, '') + '！ 次のご来店から特典が変わります']);
+    else if (/戻ります|更新しました/.test(m)) h.push(['up', m.split('。')[0]]);
+  });
+  $('banner').innerHTML = h.map(function (x) { return '<div class="banner ' + x[0] + '">' + esc(x[1]) + '</div>'; }).join('');
+}
+function drawCard(r) {
+  var c = r.card, g = GEO[c.rank] || GEO['エコノミー'];
+  banner(r); LAST = r;
+  var cv = $('cv'), img = $('cimg');
+  img.onerror = function () { img.style.display = 'none'; }; img.style.display = '';
+  img.src = g.img + '?v=' + IMG_VER; cv.style.aspectRatio = g.ar;
+  var h = '', i;
+  for (i = 0; i < c.pt && i < g.s.length; i++) {
+    var s = g.s[i], d = c.dates[i] || '', m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    h += '<div class="cell' + (s[4] ? ' fr' : '') + '" style="left:' + s[0] + '%;top:' + s[1] + '%;width:' + s[2] + '%;height:' + s[3] + '%">' + (m ? '<span>' + m[1] + '</span><span>' + (+m[2]) + '/' + (+m[3]) + '</span>' : '') + '</div>';
+  }
+  h += '<div class="nm" id="nmT" style="left:' + ((g.n[0] + g.n[1]) / 2) + '%;top:' + g.ty + '%;color:' + g.tc + '">' + esc(c.name) + '</div>';
+  h += '<div class="nn" id="noT" style="left:' + ((g.o[0] + g.o[1]) / 2) + '%;top:' + g.ty + '%;color:' + g.tc + '">' + esc(c.noShow) + '</div>';
+  $('ov').innerHTML = h; fit(g);
+  var left = c.need - c.pt, nxt = NEXT[c.rank];
+  $('pt').innerHTML = c.pt + '<small> / ' + c.need + 'pt</small>';
+  var nx = '';
+  if (c.rank === 'プラチナ') nx = 'あと' + left + 'ptで継続';
+  else if (c.rank === 'ファースト' && c.first && c.first.deadline) nx = c.first.over ? 'あと' + left + 'ptで新しいファーストクラスのカード' : 'あと' + left + 'ptでプラチナクラス（' + jp(c.first.deadline) + 'まで）';
+  else nx = 'あと' + left + 'ptで' + nxt + 'クラス';
+  if (c.rank === 'エコノミー' && c.gifts) { var ng = c.gifts.filter(function (x) { return x > c.pt; })[0]; if (ng && ng < c.need) nx += '（あと' + (ng - c.pt) + 'ptでプレゼント）'; }
+  $('nx').textContent = nx;
+  var rsv = '';                                     // 次回のご予約: 予約日が今日以降なら、いつでも日付を出す（2倍の対象なら、その一言も）
+  if (c.res && (c.resUp != null ? c.resUp : c.res >= ymdNow())) rsv = '<div>次回のご予約　' + jpw(c.res) + '</div>' + (c.willDouble ? '<div class="rs2">ご予約日までのご来店で、ポイント2倍</div>' : '');
+  $('res').innerHTML = rsv;
+  var p = c.plat, pb = $('plat');
+  if (p) {
+    var pct = p.amount != null ? Math.min(100, Math.round(p.amount / p.target * 100)) : 0, hh = '<div class="lbl">プラチナ更新まで</div>';
+    if (p.amount != null) {
+      hh += '<div class="amt">' + yen(p.amount) + '<small>/ ' + yen(p.target) + '</small></div><div class="bar"><i style="width:' + pct + '%"></i></div>';
+      hh += p.ok ? '<div class="rem">更新の条件を達成しています</div>' : '<div class="rem">あと ' + yen(Math.max(0, p.target - p.amount)) + ' で更新</div>';
+      if (p.deadline) hh += '<div class="dl">' + jp(p.deadline) + 'までに</div>';
+      hh += '<div class="note">' + jp(p.asof) + '時点の金額です（月初に更新）。<br>施術のご利用額、税込。ポイントでの更新もできます。</div>';
+    } else {
+      hh += '<div class="rem" style="margin-top:6px">金額は月初に更新されます</div>' + (p.deadline ? '<div class="dl">' + jp(p.deadline) + 'までに</div>' : '') + '<div class="note">年間のご利用額が' + yen(p.target) + '（税込）以上、または' + p.need + 'ポイントで更新できます。</div>';
+    }
+    pb.innerHTML = hh; pb.hidden = false;
+  } else pb.hidden = true;
+}
+function fit(g) {                                   // 長いお名前は縮めて枠に収める
+  var cv = $('cv'), W = cv.clientWidth || 360, u = W / 100; cv.style.setProperty('--u', u + 'px');
+  [['nmT', g.n, 3.9], ['noT', g.o, 3.9]].forEach(function (a) {
+    var el = $(a[0]); if (!el) return; var box = (a[1][1] - a[1][0]) / 100 * W * 0.93; el.style.fontSize = (u * a[2]) + 'px';
+    var w = el.scrollWidth; if (w > box) el.style.fontSize = (u * a[2] * box / w) + 'px';
+  });
+}
+window.addEventListener('resize', function () { if (LAST && STATE === 'linked') fit(GEO[LAST.card.rank] || GEO['エコノミー']); });
+if (window.ResizeObserver) new ResizeObserver(function () { if (LAST && STATE === 'linked') fit(GEO[LAST.card.rank] || GEO['エコノミー']); }).observe($('cv'));
+
+/* ===================================================================
+ * プラチナの「旅」の演出（ポイントが付いた直後に、2〜4秒だけ出す）
+ *  ・行き先は12か所。進み ＝ ポイントの数 と 金額÷（目標額÷必要pt）の大きいほう（足さない）
+ *  ・2倍の日は2か所ぶん、金額が先行しているときは追いつき、同じ場所なら「滞在中」
+ *  ・季節の飾りは日付で自動で切り替わる（THEME の 1〜12 月）
+ *  ・見せるだけ。ポイントや更新のルールには一切さわらない
+ * =================================================================== */
+var DEST = [['FUK', '福岡', ''], ['ICN', 'ソウル', 'カフェ巡りの街'], ['TPE', '台北', '夜市のにぎわいの街'], ['BKK', 'バンコク', '寺院と屋台の街'], ['SIN', 'シンガポール', '夜景のきれいな街'],
+  ['DXB', 'ドバイ', '砂漠と高層ビルの街'], ['FCO', 'ローマ', '石畳と噴水の街'], ['CDG', 'パリ', 'セーヌ川の街'], ['LHR', 'ロンドン', '紅茶と雨の街'], ['JFK', 'ニューヨーク', '眠らない街'],
+  ['LAX', 'ロサンゼルス', '太陽とヤシの街'], ['HNL', 'ホノルル', 'ビーチの街'], ['FUK', '福岡', 'おかえりなさい']];
+var THEME = {
+  1: { sky: ['#1b2a52', '#e7893c'], fx: 'star', n: 12, deco: 'sun', greet: '新しい1年も、よろしくお願いします' },
+  2: { sky: ['#1f2b4d', '#4a6a97'], fx: 'snow', n: 14, greet: '寒い日が続きます。温かくしてお過ごしください' },
+  3: { sky: ['#3a3358', '#d98aa8'], fx: 'petal', n: 16, greet: '春の訪れですね' },
+  4: { sky: ['#3b3a63', '#f0a9bd'], fx: 'petal', n: 22, greet: '新しい季節も、よろしくお願いします' },
+  5: { sky: ['#143b3a', '#5fae7a'], fx: 'leafg', n: 14, greet: '気持ちのいい季節ですね' },
+  6: { sky: ['#2b3340', '#6b7d92'], fx: 'rain', n: 26, greet: '雨の中のご来店、ありがとうございます' },
+  7: { sky: ['#101d4a', '#3d56a6'], fx: 'star', n: 22, greet: '暑い日が続きます。水分補給を忘れずに' },
+  8: { sky: ['#2a1d4e', '#e4743f'], fx: 'star', n: 14, greet: '暑い中のご来店、ありがとうございます' },
+  9: { sky: ['#101a3a', '#34457a'], fx: 'star', n: 16, deco: 'moon', greet: '夜が心地よい季節になりました' },
+  10: { sky: ['#3a2417', '#c96a2b'], fx: 'leafo', n: 16, greet: '実りの秋ですね' },
+  11: { sky: ['#3a1d24', '#b2432f'], fx: 'leafr', n: 18, greet: '朝晩が冷えてきました' },
+  12: { sky: ['#0f2a3f', '#1d5a4a'], fx: 'snow', n: 26, deco: 'tree', greet: 'メリークリスマス。素敵な1日を' }
+};
+var TREE = '<svg viewBox="0 0 60 70" aria-hidden="true"><polygon points="30,6 40,24 20,24" fill="#22a06b"/><polygon points="30,16 44,38 16,38" fill="#1f9461"/><polygon points="30,28 48,54 12,54" fill="#1a8656"/><rect x="26" y="54" width="8" height="12" rx="1" fill="#8a5a33"/><polygon points="30,0 31.8,3.8 36,4.3 33,7.2 33.8,11.4 30,9.4 26.2,11.4 27,7.2 24,4.3 28.2,3.8" fill="#ffd34d"/><circle class="l1" cx="27" cy="30" r="2.2" fill="#ff5a5f"/><circle class="l2" cx="34" cy="42" r="2.2" fill="#ffd34d"/><circle class="l3" cx="23" cy="48" r="2.2" fill="#6ec1ff"/><circle class="l1" cx="37" cy="50" r="2.2" fill="#ff5a5f"/></svg>';
+var PLANE = '<svg class="pl" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3c2.2 0 3.4 2 3.4 5.4V22l25 15.5v6.2L35.4 36.5V50l7 5.6V61L32 58l-10.4 3v-5.4l7-5.6V36.5L3.6 43.7v-6.2L28.6 22V8.4C28.6 5 29.8 3 32 3z"/></svg>';
+function sget(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+function sset(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+function canStore() { try { localStorage.setItem('dn_t', '1'); localStorage.removeItem('dn_t'); return true; } catch (e) { return false; } }
+function ix(pos, need) { return Math.max(0, Math.min(12, Math.round(pos * 12 / need))); }
+
+/* 見せる中身を決める（計算だけ・画面はさわらない） */
+function scene(o) {
+  var need = o.need, N = o.to, from = o.from, n = N - from, tot = n, k, hops = [], r;
+  if (n > 3) { from = N - 3; n = 3; }                              // 多いときは最後の3か所だけ飛ぶ
+  for (k = 0; k < n; k++) hops.push([from + k, from + k + 1]);
+  if (!n) hops.push([N, N]);
+  var city = DEST[ix(N, need)];
+  r = { need: need, mo: o.mo, hops: hops, stay: !n, title: 'ご来店ありがとうございます', tag: 'PLATINUM', msg: '', sub: '', blurb: '' };
+  if (o.kind === 'done') { r.title = '世界一周達成！'; r.tag = 'WORLD TOUR COMPLETE'; r.msg = '福岡に帰ってきました。\nプラチナクラスの新しい旅が始まります'; }
+  else if (o.kind === 'welcome') { r.title = 'プラチナクラスへようこそ'; r.tag = 'WELCOME ABOARD'; r.msg = n ? N + 'か所目、' + city[1] + 'へ。世界一周の旅が始まります' : '福岡から、世界一周の旅が始まります'; }
+  else if (o.kind === 'renew') { r.tag = 'NEW JOURNEY'; r.msg = 'プラチナ更新、ありがとうございます。\n新しい1年の旅が始まります'; }
+  else if (!n) { r.tag = 'STAY'; r.msg = 'ただいま' + city[1] + 'に滞在中'; r.blurb = city[2]; if (o.lead) r.sub = 'ご利用金額ぶん、旅が先に進んでいます'; }
+  else if (o.tp >= 2 && tot === o.tp) { r.tag = 'DOUBLE FLIGHT'; r.msg = 'ダブルフライト！\n次回予約の特典で、2か所進みました'; r.blurb = city[1] + '：' + city[2]; }
+  else if (tot > o.tp) { r.tag = 'EXTRA MILES'; r.msg = o.tp ? 'ポイントとご利用金額ぶんで、' + tot + 'か所進みました' : 'ご利用金額ぶん、旅が' + tot + 'か所進みました'; r.blurb = city[1] + '：' + city[2]; }
+  else { r.msg = N + 'か所目、' + city[1] + 'に到着しました'; r.blurb = city[2]; }
+  if (N >= need && o.kind !== 'done') { r.msg = '世界一周のゴール、福岡に到着しました'; r.blurb = ''; r.sub = 'ご利用金額で、更新の条件を達成しています。\n期限の日に更新されます'; }
+  return r;
+}
+/* カードのデータから、いま演出を出すか・何を出すかを決める */
+function mkPlan(r) {
+  var c = r && r.card; if (!c || c.rank !== 'プラチナ' || !(c.need > 0)) return null;
+  var need = c.need, P = c.pt || 0, td = c.last || '', msgs = r.msgs || [], fresh = r.granted === true || r.justRegistered === true;
+  var rk = 'dn_trip_' + c.no, rec = sget(rk), start = c.start || '', i;
+  if (!fresh && (!c.granted || (rec && rec.day === td) || !canStore())) return null;   // 同じ日に何度も出さない
+  var has = function (re) { return msgs.some(function (m) { return re.test(m); }); };
+  var done = has(/^プラチナクラス達成/), welcome = has(/^ファーストクラス達成！新しいプラチナ/), renew = has(/金額条件で更新しました/);
+  var tp = 0; if (c.granted && c.dates) for (i = c.dates.length - 1; i >= 0 && c.dates[i] === td; i--) tp++;   // 今日つくポイント（2倍なら2つ）
+  var p = c.plat, unit = p && p.target > 0 ? p.target / need : 0, A = (p && p.amount != null && unit > 0) ? Math.floor(p.amount / unit + 1e-9) : 0;
+  var N = Math.min(need, Math.max(P, A)), same = rec && rec.start === start, from, kind = 'hop';
+  if (done) { kind = 'done'; N = need; from = (rec && !same && rec.pos < need) ? rec.pos : Math.max(0, need - (r.dbl ? 2 : 1)); }
+  else {
+    from = same ? Math.min(rec.pos, N) : Math.max(0, P - tp); from = Math.min(from, N);
+    if (welcome) { kind = 'welcome'; from = 0; } else if (renew) { kind = 'renew'; from = 0; }
+  }
+  sset(rk, { start: start, pos: done ? P : N, day: td });
+  var o = scene({ kind: kind, from: from, to: N, need: need, tp: tp, lead: A > P, mo: new Date().getMonth() + 1 });
+  o.date = td; return o;
+}
+function fx(kind, n) {                                              // 舞うもの（雪・花びら・葉・雨・星）
+  var h = '', i, rnd = function (k) { var x = Math.sin(k * 91.7 + kind.length * 7.3) * 43758.5453; return x - Math.floor(x); };
+  for (i = 0; i < n; i++) {
+    var st = kind === 'star', rn = kind === 'rain';
+    var z = (st ? 1.5 + rnd(i + 1) * 2.5 : rn ? 3 + rnd(i + 1) * 3 : 4 + rnd(i + 1) * 6).toFixed(1), d = (st ? 2 + rnd(i + 2) * 3 : rn ? 0.9 + rnd(i + 2) * 0.7 : 4.5 + rnd(i + 2) * 4);
+    h += '<i class="' + kind + '" style="left:' + (rnd(i + 3) * 100).toFixed(1) + '%;' + (st ? 'top:' + (rnd(i + 4) * 70).toFixed(1) + '%;' : '') + '--z:' + z + 'px;--d:' + d.toFixed(2) + 's;--dl:-' + (rnd(i + 5) * d).toFixed(2) + 's;--dx:' + (rnd(i + 6) * 80 - 40).toFixed(0) + 'px;--r:' + (rnd(i + 7) * 360).toFixed(0) + 'deg"></i>';
+  }
+  return h;
+}
+function runTrip(p) {
+  var old = $('fly'); if (old && old.parentNode) old.parentNode.removeChild(old);
+  var th = THEME[p.mo] || THEME[12], el = document.createElement('div'), timers = [], i = 0, closed = false, T = 2200, last = p.hops.length - 1;
+  var reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var dt = String(p.date || '').match(/^\d{4}-(\d{2})-(\d{2})$/), today = dt ? (+dt[1]) + '/' + (+dt[2]) : (new Date().getMonth() + 1) + '/' + new Date().getDate();
+  el.id = 'fly'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'プラチナクラスのご搭乗');
+  el.style.setProperty('--s1', th.sky[0]); el.style.setProperty('--s2', th.sky[1]);
+  el.innerHTML = '<div class="fx"></div><div class="dc ' + (th.deco || '') + '">' + (th.deco === 'tree' ? '<span class="tr a">' + TREE + '</span><span class="tr b">' + TREE + '</span>' : '') + '</div>' +
+    '<div class="bx"><div class="cls">PLATINUM CLASS</div><h2 id="fT"></h2>' +
+    '<div class="bp' + (p.stay ? ' stay' : '') + '" id="fP"><div class="hd"><span>BOARDING PASS</span><span id="fG"></span></div>' +
+    '<div class="rt"><div class="ap"><b id="fa"></b><small id="fan"></small></div><div class="pa" id="fpa"><div class="pm">' + PLANE + '</div></div><div class="ap r"><b id="fb"></b><small id="fbn"></small></div></div>' +
+    '<div class="ft"><span><span id="fd"></span> ・ <span id="fn"></span></span></div><div class="st"><span id="fsn"></span><small id="fsd"></small></div></div>' +
+    '<div class="msg" id="fM"></div><div class="sb" id="fS"></div><button class="sk" id="fK" type="button">カードを見る</button></div>';
+  document.body.appendChild(el); document.documentElement.style.overflow = 'hidden';
+  el.querySelector('.fx').innerHTML = fx(th.fx, th.n);
+  $('fT').textContent = p.title; $('fG').textContent = p.tag;
+  function at(f, ms) { timers.push(setTimeout(f, ms)); }
+  function close() { if (closed) return; closed = true; timers.forEach(clearTimeout); el.classList.remove('on'); document.documentElement.style.overflow = ''; setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 520); }
+  el.onclick = close;
+  function msgIn() {
+    var br = function (t) { return String(t).split('\n').map(esc).join('<br>'); };
+    $('fM').innerHTML = br(p.msg); $('fS').innerHTML = [p.blurb, p.sub, th.greet].filter(Boolean).map(br).join('<br>');
+    ['fM', 'fS', 'fK'].forEach(function (x) { $(x).classList.add('in'); });
+  }
+  function hop() {
+    var h = p.hops[i], a = DEST[ix(h[0], p.need)], b = DEST[ix(h[1], p.need)], P = $('fP');
+    P.classList.remove('go');
+    if (p.stay) { $('fa').textContent = b[0]; $('fan').textContent = b[1]; } else { $('fa').textContent = a[0]; $('fan').textContent = a[1]; $('fb').textContent = b[0]; $('fbn').textContent = b[1]; }
+    $('fd').textContent = '本日 ' + today; $('fn').textContent = h[1] === 0 ? '出発' : h[1] >= p.need ? '帰着' : h[1] + 'か所目';
+    $('fsn').textContent = b[1]; $('fsd').textContent = today; $('fsn').style.setProperty('--sf', (b[1].length <= 3 ? 15 : b[1].length === 4 ? 13 : 10.5) + 'px');
+    P.style.setProperty('--w', Math.max(40, $('fpa').clientWidth || 120) + 'px');
+    void P.offsetWidth; P.classList.add('go');
+    i++;
+    if (i <= last) at(hop, T); else { at(msgIn, reduce ? 0 : (p.stay ? 900 : 1750)); at(close, (reduce ? 4500 : (p.stay ? 900 : 1750) + 3300)); }
+  }
+  requestAnimationFrame(function () { el.classList.add('on'); });
+  if (reduce) { i = last; hop(); } else at(hop, 450);
+  return el;
+}
+var TRIP_ON = false;                                // プラチナの旅の演出のスイッチ。使う時だけ true にする（?trip=… の見た目確認は、このスイッチに関係なく開ける）
+function tripCheck(r) { if (!TRIP_ON) return; try { var p = mkPlan(r); if (p) runTrip(p); } catch (e) { } }
+/* 見た目の確認用: ?trip=normal|double|amount|stay|goal|done|welcome|renew  &m=月  &n=位置（ログインなしで開ける） */
+function preview() {
+  var k = qs.get('trip'), n = +(qs.get('n') || 4), m = +qs.get('m') || (new Date().getMonth() + 1), o = { kind: 'hop', from: n - 1, to: n, need: 12, tp: 1, lead: false, mo: m };
+  if (k === 'double') { o.from = n - 2; o.tp = 2; } else if (k === 'amount') { o.from = n - 2; } else if (k === 'stay') { o.from = n; o.lead = true; }
+  else if (k === 'goal') { o.from = 10; o.to = 12; o.tp = 1; } else if (k === 'done') { o.kind = 'done'; o.from = 11; o.to = 12; }
+  else if (k === 'welcome') { o.kind = 'welcome'; o.from = 0; o.to = 0; } else if (k === 'renew') { o.kind = 'renew'; o.from = 0; o.to = 1; }
+  var p = scene(o); p.date = ''; $('loading').textContent = 'プレビュー（画面をタップするともう一度）'; show('loading'); $('loading').onclick = function () { runTrip(p); }; runTrip(p);
+}
+window.__trip = { plan: mkPlan, scene: scene };
+if (qs.get('trip')) preview(); else boot();
+})();
+</script>
+</body>
+</html>
